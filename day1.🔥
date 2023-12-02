@@ -1,3 +1,6 @@
+from utils.vector import InlinedFixedVector
+
+
 fn solve1(s: String) -> Int:
     alias ord0 = ord("0")
     alias stop = ord("\n") - ord0
@@ -15,15 +18,104 @@ fn solve1(s: String) -> Int:
     return total
 
 
+fn strrev(s: String) -> String:
+    var rev = String()
+    for i in range(len(s) - 1, -1, -1):
+        rev += s[i]
+    return rev
+
+
+fn solve2_line_first_digit(
+    s: String, numbers: InlinedFixedVector[StringLiteral, 9]
+) -> Int:
+    alias ord0 = ord("0")
+    var first_index = len(s)
+    var first_digit = -1
+
+    # Check Arabic numerals first
+    for i in range(len(s)):
+        let digitoid = ord(s[i]) - ord0
+        if 0 < digitoid < 10:
+            first_index = i
+            first_digit = digitoid
+            break
+
+    # Then goes word numerals
+    for i in range(9):
+        let number = numbers[i]
+        let index = s.find(number)
+        if 0 <= index < first_index:
+            first_index = index
+            first_digit = i + 1
+
+    return first_digit
+
+
+fn solve2_line(
+    s: String,
+    numbers: InlinedFixedVector[StringLiteral, 9],
+    srebmun: InlinedFixedVector[StringLiteral, 9],
+) -> Int:
+    let first_digit = solve2_line_first_digit(s, numbers)
+    let last_digit = solve2_line_first_digit(strrev(s), srebmun)
+    let total_line = 10 * first_digit + last_digit
+    return total_line
+
+
+fn solve2(s: String) -> Int:
+    var numbers = InlinedFixedVector[StringLiteral, 9](0)
+    numbers.append("one")
+    numbers.append("two")
+    numbers.append("three")
+    numbers.append("four")
+    numbers.append("five")
+    numbers.append("six")
+    numbers.append("seven")
+    numbers.append("eight")
+    numbers.append("nine")
+
+    var srebmun = InlinedFixedVector[StringLiteral, 9](0)
+    srebmun.append("eno")
+    srebmun.append("owt")
+    srebmun.append("eerht")
+    srebmun.append("ruof")
+    srebmun.append("evif")
+    srebmun.append("xis")
+    srebmun.append("neves")
+    srebmun.append("thgie")
+    srebmun.append("enin")
+
+    var total = 0
+    var start = 0
+    var end = 0
+    for i in range(len(s)):
+        if s[i] == "\n":
+            end = i
+            total += solve2_line(s[start:end], numbers, srebmun)
+            start = i + 1
+    return total
+
+
 fn main():
     print(solve1(example1))
     print(solve1(text))
+    print(solve2(example2))
+    print(solve2(text))
 
 
 alias example1 = """1abc2
 pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet
+"""
+
+alias example2 = """two1nine
+eightwothree
+abcone2threexyz
+xtwone3four
+4nineeightseven2
+zoneight234
+7pqrstsixteen
 """
 
 alias text = """four9one
