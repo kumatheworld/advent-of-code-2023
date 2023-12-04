@@ -1,4 +1,6 @@
 from math import min, max
+from python import Python
+from python.object import PythonObject
 
 
 fn minus_ord0(c: String) -> Int:
@@ -42,9 +44,58 @@ fn solve1(s: String) -> Int:
     return total
 
 
-fn main():
+fn solve2(s: String) raises -> Int:
+    var stars = Python.dict()
+    for i in range(len(s)):
+        if s[i] == "*":
+            stars[i] = []
+    let num_stars = stars.__len__()
+
+    var width = 0
+    for i in range(len(s)):
+        if s[i] == "\n":
+            width = i + 1
+            break
+    let num_rows = len(s) // width
+
+    var total = 0
+    var current_number = 0
+    var start = -1
+    for i in range(len(s)):
+        let c = s[i]
+        let digitoid = minus_ord0(c)
+        if 0 <= digitoid < 10:
+            if current_number == 0:
+                start = i
+            current_number = 10 * current_number + digitoid
+        else:
+            if current_number:
+                let row = start // width
+                let column_left = max(0, start % width - 1)
+                let column_right = i % width
+                for j in range(max(0, row - 1), min(row + 2, num_rows)):
+                    for k in range(column_left, column_right + 1):
+                        let l = width * j + k
+                        if s[l] == "*":
+                            for k in stars:
+                                if k == l:
+                                    stars[k].append(current_number)
+                                    break
+            current_number = 0
+
+    for k in stars:
+        let v = stars[k]
+        if v.__len__() == 2:
+            total += v[0].to_float64().to_int() * v[1].to_float64().to_int()
+
+    return total
+
+
+fn main() raises:
     print(solve1(example))
     print(solve1(text))
+    print(solve2(example))
+    print(solve2(text))
 
 
 alias example = """467..114..
