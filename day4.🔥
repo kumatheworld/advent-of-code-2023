@@ -55,9 +55,28 @@ fn solve1(s: String) -> Int:
     return total
 
 
+fn solve2(s: String) -> Int:
+    var total = 0
+    let v = num_winnings_all(s)
+
+    var cards = DynamicVector[Int](len(v))
+    for i in range(0, len(v)):
+        cards.append(1)
+
+    for i in range(len(v)):
+        let ci = cards[i]
+        total += ci
+        for j in range(i + 1, i + v[i] + 1):
+            cards[j] += ci
+
+    return total
+
+
 fn main():
     print(solve1(example))
     print(solve1(text))
+    print(solve2(example))
+    print(solve2(text))
 
 
 alias example = """Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
