@@ -1,18 +1,11 @@
-fn solve1(s: String) -> Int:
+fn num_winnings_line(s: String, start: Int, middle: Int, end: Int) -> Int:
     alias ord0 = ord("0")
-    var total = 0
     var winning_numbers = DynamicVector[Int]()
-    var num_winnings_m1 = -1
+    var num_winnings = 0
     var current_number = 0
-    var state = 0  # state 0 : state 1 | state 2
 
-    for i in range(len(s)):
+    for i in range(start, end):
         let c = s[i]
-
-        if state == 0:
-            if c == ":":
-                state = 1
-            continue
 
         let digitoid = ord(c) - ord0
         if 0 <= digitoid < 10:
@@ -20,25 +13,45 @@ fn solve1(s: String) -> Int:
             continue
 
         if current_number:
-            if state == 1:
-                winning_numbers.push_back(current_number)
+            if i < middle:
+                winning_numbers.append(current_number)
             else:
                 for j in range(len(winning_numbers)):
                     if winning_numbers[j] == current_number:
-                        num_winnings_m1 += 1
+                        num_winnings += 1
                         break
             current_number = 0
 
-        if c == "|":
-            state = 2
-        elif c == "\n":
-            total += 1 << num_winnings_m1
-            winning_numbers.clear()
-            num_winnings_m1 = -1
-            current_number = 0
-            state = 0
+    return num_winnings
 
-    # Why is total always 0 here?
+
+fn num_winnings_all(s: String) -> DynamicVector[Int]:
+    var start = 0
+    var middle = 0
+    var end = 0
+    for i in range(len(s)):
+        let c = s[i]
+        if c == ":":
+            start = i + 2
+        elif c == "|":
+            middle = i
+        elif c == "\n":
+            end = i + 1
+            break
+
+    var num_winnings_vector = DynamicVector[Int](len(s) // end)
+    for j in range(0, len(s), end):
+        let num_winnings = num_winnings_line(s, j + start, j + middle, j + end)
+        num_winnings_vector.append(num_winnings)
+
+    return num_winnings_vector
+
+
+fn solve1(s: String) -> Int:
+    var total = 0
+    let v = num_winnings_all(s)
+    for i in range(len(v)):
+        total += 1 << (v[i] - 1)
     return total
 
 
