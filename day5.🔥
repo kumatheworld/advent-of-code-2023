@@ -1,3 +1,6 @@
+alias PTMap = DynamicVector[Tuple[Int, Int, Int]]  # Piecewise Translation
+
+
 fn parse_ints(s: String) raises -> DynamicVector[Int]:
     let numbers_str = s.split(" ")
     var numbers = DynamicVector[Int]()
@@ -12,7 +15,7 @@ fn parse_ints(s: String) raises -> DynamicVector[Int]:
 fn solve1(s: String) raises -> Int:
     let lines = s.split("\n")
     var queries = parse_ints(lines[0])
-    var m4p = DynamicVector[Tuple[Int, Int, Int]]()
+    var m4p = PTMap()
     for i in range(2, len(lines)):
         let line = lines[i]
 
