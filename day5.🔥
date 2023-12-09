@@ -12,25 +12,25 @@ fn parse_ints(s: String) raises -> DynamicVector[Int]:
 fn solve1(s: String) raises -> Int:
     let lines = s.split("\n")
     var queries = parse_ints(lines[0])
-    var d1ct = DynamicVector[Tuple[Int, Int, Int]]()
+    var m4p = DynamicVector[Tuple[Int, Int, Int]]()
     for i in range(2, len(lines)):
         let line = lines[i]
 
         if line:  # line and isdigit(ord(line[0])) should be in one line
             if isdigit(ord(line[0])):
                 let numbers = parse_ints(line)
-                d1ct.append((numbers[0], numbers[1], numbers[2]))
+                m4p.append((numbers[0], numbers[1], numbers[2]))
 
         if line == "" or i == len(lines) - 1:
             for j in range(len(queries)):
-                for k in range(len(d1ct)):
-                    let dst = d1ct[k].get[0, Int]()
-                    let src = d1ct[k].get[1, Int]()
-                    let l3n = d1ct[k].get[2, Int]()
+                for k in range(len(m4p)):
+                    let dst = m4p[k].get[0, Int]()
+                    let src = m4p[k].get[1, Int]()
+                    let l3n = m4p[k].get[2, Int]()
                     if src <= queries[j] < src + l3n:
                         queries[j] += dst - src
                         break
-            d1ct.clear()
+            m4p.clear()
 
     var query_min = queries[0]
     for j in range(1, len(queries)):
