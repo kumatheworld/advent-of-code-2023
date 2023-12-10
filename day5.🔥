@@ -1,6 +1,7 @@
 import math
 
-alias PTMap = DynamicVector[Tuple[Int, Int, Int]]  # Piecewise Translation
+alias Segment = Tuple[Int, Int, Int]  # (destination, source, length)
+alias PTMap = DynamicVector[Segment]  # Piecewise Translation
 
 
 fn parse_ints(s: String) raises -> DynamicVector[Int]:
