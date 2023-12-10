@@ -1,0 +1,40 @@
+fn parse_ints(s: String) raises -> DynamicVector[Int]:
+    let numbers_str = s.split(" ")
+    var numbers = DynamicVector[Int]()
+    for i in range(len(numbers_str)):
+        try:
+            numbers.append(atol(numbers_str[i]))
+        except Error:
+            pass
+    return numbers
+
+
+fn solve1(s: String) raises -> Int:
+    let lines = s.split("\n")
+    let times = parse_ints(lines[0])
+    let distances = parse_ints(lines[1])
+    var total = 1
+    for i in range(len(times)):
+        let t = times[i]
+        let d = distances[i]
+        var total_line = 0
+        for j in range(t):  # feeling lazy to implement binary search
+            if j * (t - j) > d:
+                total_line += 1
+        total *= total_line
+
+    return total
+
+
+fn main() raises:
+    print(solve1(example))
+    print(solve1(text))
+
+
+alias example = """Time:      7  15   30
+Distance:  9  40  200
+"""
+
+alias text = """Time:        60     80     86     76
+Distance:   601   1163   1559   1300
+"""
