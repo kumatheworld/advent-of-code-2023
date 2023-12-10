@@ -45,9 +45,93 @@ fn solve1(s: String) raises -> Int:
     return query_min
 
 
+fn bubble_sort(inout m4p: PTMap) -> NoneType:
+    let l3n = len(m4p)
+    for i in range(l3n):
+        for j in range(1, l3n - i):
+            let s = m4p[j - 1].get[1, Int]()
+            let t = m4p[j].get[1, Int]()
+            if s > t:
+                let tmp = m4p[j - 1]
+                m4p[j - 1] = m4p[j]
+                m4p[j] = tmp
+
+
+fn map_segment(seg: Segment, sorted_map: PTMap) -> PTMap:
+    let dst = seg.get[0, Int]()
+    let src = seg.get[1, Int]()
+    let l3n = seg.get[2, Int]()
+    let a = dst
+    let b = a + l3n
+    var m4p = PTMap()
+
+    let a0 = sorted_map[0].get[1, Int]()
+    if a < a0:
+        m4p.append((a, src, math.min(l3n, a0 - a)))
+
+    for i in range(len(sorted_map)):
+        let dst_i = sorted_map[i].get[0, Int]()
+        let src_i = sorted_map[i].get[1, Int]()
+        let len_i = sorted_map[i].get[2, Int]()
+        let ai = src_i
+        let bi = src_i + len_i
+        if a < bi and ai < b:  # [a, b) and [ai, bi) intersects
+            let offset = math.max(0, ai - a)
+            let dst_ = dst + dst_i - src_i + offset
+            let src_ = src + offset
+            let len_ = math.min(b, bi) - math.max(a, ai)
+            m4p.append((dst_, src_, len_))
+
+    let map_last = sorted_map[len(sorted_map) - 1]
+    let an = map_last.get[1, Int]() + map_last.get[2, Int]()
+    if an <= b:
+        let offset = math.max(0, an - a)
+        let dst_ = dst + offset
+        let src_ = src + offset
+        let len_ = l3n - offset
+        m4p.append((dst_, src_, len_))
+
+    return m4p
+
+
+fn solve2(s: String) raises -> Int:
+    let lines = s.split("\n")
+    let queries_seq = parse_ints(lines[0])
+    var queries = PTMap()
+    for i in range(0, len(queries_seq), 2):
+        queries.append((queries_seq[i], queries_seq[i], queries_seq[i + 1]))
+
+    var m4p = PTMap()
+    for i in range(2, len(lines)):
+        let line = lines[i]
+
+        if line:  # line and isdigit(ord(line[0])) should be in one line
+            if isdigit(ord(line[0])):
+                let numbers = parse_ints(line)
+                m4p.append((numbers[0], numbers[1], numbers[2]))
+
+        if line == "" or i == len(lines) - 1:
+            bubble_sort(m4p)
+            var queries_mapped = PTMap()
+            for i in range(len(queries)):
+                let query_mapped = map_segment(queries[i], m4p)
+                for j in range(len(query_mapped)):
+                    queries_mapped.append(query_mapped[j])
+            queries = queries_mapped
+            m4p.clear()
+
+    var query_min = queries[0].get[0, Int]()
+    for j in range(1, len(queries)):
+        query_min = math.min(query_min, queries[j].get[0, Int]())
+
+    return query_min
+
+
 fn main() raises:
     print(solve1(example))
     print(solve1(text))
+    print(solve2(example))
+    print(solve2(text))
 
 
 alias example = """seeds: 79 14 55 13
