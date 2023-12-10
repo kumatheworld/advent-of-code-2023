@@ -31,9 +31,27 @@ fn solve1(s: String) raises -> Int:
     return total
 
 
+fn parse_and_concat_ints(s: String) raises -> Int:
+    let numbers = parse_ints(s)
+    var number_str = String("")
+    for i in range(len(numbers)):
+        number_str += String(numbers[i])
+    let number = atol(number_str)
+    return number
+
+
+fn solve2(s: String) raises -> Int:
+    let lines = s.split("\n")
+    let time = parse_and_concat_ints(lines[0])
+    let distance = parse_and_concat_ints(lines[1])
+    return num_ways(time, distance)
+
+
 fn main() raises:
     print(solve1(example))
     print(solve1(text))
+    print(solve2(example))
+    print(solve2(text))
 
 
 alias example = """Time:      7  15   30
