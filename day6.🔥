@@ -10,11 +10,15 @@ fn parse_ints(s: String) raises -> DynamicVector[Int]:
 
 
 fn num_ways(time: Int, distance: Int) -> Int:
-    var n = 0
-    for j in range(time):
-        if j * (time - j) > distance:
-            n += 1
-    return n
+    var a = 0
+    var b = time
+    while b - a > 1:
+        let c = (a + b) // 2
+        if c * (time - c) > distance:
+            b = c
+        else:
+            a = c
+    return time + 1 - 2 * b
 
 
 fn solve1(s: String) raises -> Int:
