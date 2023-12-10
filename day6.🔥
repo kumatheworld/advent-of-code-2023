@@ -9,20 +9,21 @@ fn parse_ints(s: String) raises -> DynamicVector[Int]:
     return numbers
 
 
+fn num_ways(time: Int, distance: Int) -> Int:
+    var n = 0
+    for j in range(time):
+        if j * (time - j) > distance:
+            n += 1
+    return n
+
+
 fn solve1(s: String) raises -> Int:
     let lines = s.split("\n")
     let times = parse_ints(lines[0])
     let distances = parse_ints(lines[1])
     var total = 1
     for i in range(len(times)):
-        let t = times[i]
-        let d = distances[i]
-        var total_line = 0
-        for j in range(t):  # feeling lazy to implement binary search
-            if j * (t - j) > d:
-                total_line += 1
-        total *= total_line
-
+        total *= num_ways(times[i], distances[i])
     return total
 
 
