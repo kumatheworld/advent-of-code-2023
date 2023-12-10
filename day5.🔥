@@ -4,8 +4,8 @@ alias Segment = Tuple[Int, Int, Int]  # (destination, source, length)
 alias PTMap = DynamicVector[Segment]  # Piecewise Translation
 
 
-fn parse_ints(s: String) raises -> DynamicVector[Int]:
-    let numbers_str = s.split(" ")
+fn parse_ints(line: String) raises -> DynamicVector[Int]:
+    let numbers_str = line.split(" ")
     var numbers = DynamicVector[Int]()
     for i in range(len(numbers_str)):
         try:
