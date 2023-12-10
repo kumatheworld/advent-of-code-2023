@@ -1,3 +1,5 @@
+import math
+
 alias PTMap = DynamicVector[Tuple[Int, Int, Int]]  # Piecewise Translation
 
 
@@ -37,8 +39,7 @@ fn solve1(s: String) raises -> Int:
 
     var query_min = queries[0]
     for j in range(1, len(queries)):
-        if query_min > queries[j]:
-            query_min = queries[j]
+        query_min = math.min(query_min, queries[j])
 
     return query_min
 
