@@ -1,6 +1,23 @@
 import math
 
 
+@value
+@register_passable
+struct Hand(CollectionElement):
+    var hand: StaticIntTuple[5]
+    var bid: Int
+
+    fn __init__(hand_str: String, bid: Int) -> Self:
+        let hand = StaticIntTuple[5](
+            Self.strength(hand_str[0]),
+            Self.strength(hand_str[1]),
+            Self.strength(hand_str[2]),
+            Self.strength(hand_str[3]),
+            Self.strength(hand_str[4]),
+        )
+        return Self {hand: hand, bid: bid}
+
+    @staticmethod
 fn strength(s: String) -> Int:
     let c = ord(s[0])
     if isdigit(c):
@@ -16,23 +33,6 @@ fn strength(s: String) -> Int:
     if c == ord("T"):
         return 10
     return 0  # Should never happen
-
-
-@value
-@register_passable
-struct Hand(CollectionElement):
-    var hand: StaticIntTuple[5]
-    var bid: Int
-
-    fn __init__(hand_str: String, bid: Int) -> Self:
-        let hand = StaticIntTuple[5](
-            strength(hand_str[0]),
-            strength(hand_str[1]),
-            strength(hand_str[2]),
-            strength(hand_str[3]),
-            strength(hand_str[4]),
-        )
-        return Self {hand: hand, bid: bid}
 
     fn rank(self) -> Int:
         var counter = DynamicVector[Int](15)
