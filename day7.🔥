@@ -18,21 +18,21 @@ struct Hand(CollectionElement):
         return Self {hand: hand, bid: bid}
 
     @staticmethod
-fn strength(s: String) -> Int:
-    let c = ord(s[0])
-    if isdigit(c):
-        return c - ord(0)
-    if c == ord("A"):
-        return 14
-    if c == ord("K"):
-        return 13
-    if c == ord("Q"):
-        return 12
-    if c == ord("J"):
-        return 11
-    if c == ord("T"):
-        return 10
-    return 0  # Should never happen
+    fn strength(s: String) -> Int:
+        let c = ord(s[0])
+        if isdigit(c):
+            return c - ord(0)
+        if c == ord("A"):
+            return 14
+        if c == ord("K"):
+            return 13
+        if c == ord("Q"):
+            return 12
+        if c == ord("J"):
+            return 11
+        if c == ord("T"):
+            return 10
+        return 0  # Should never happen
 
     fn rank(self) -> Int:
         var counter = DynamicVector[Int](15)
@@ -103,9 +103,118 @@ fn solve1(s: String) raises -> Int:
     return total
 
 
+# Struct inheritence is not supported yet
+# How should I avoid copy & paste?
+@value
+@register_passable
+struct Hand2(CollectionElement):
+    var hand: StaticIntTuple[5]
+    var bid: Int
+
+    fn __init__(hand_str: String, bid: Int) -> Self:
+        let hand = StaticIntTuple[5](
+            Self.strength(hand_str[0]),
+            Self.strength(hand_str[1]),
+            Self.strength(hand_str[2]),
+            Self.strength(hand_str[3]),
+            Self.strength(hand_str[4]),
+        )
+        return Self {hand: hand, bid: bid}
+
+    @staticmethod
+    fn strength(s: String) -> Int:
+        let c = ord(s[0])
+        if isdigit(c):
+            return c - ord(0)
+        if c == ord("A"):
+            return 14
+        if c == ord("K"):
+            return 13
+        if c == ord("Q"):
+            return 12
+        if c == ord("J"):
+            return 1
+        if c == ord("T"):
+            return 10
+        return 0  # Should never happen
+
+    fn rank(self) -> Int:
+        var counter = DynamicVector[Int](15)
+        for i in range(15):
+            counter.append(0)
+
+        for i in range(5):
+            counter[self.hand[i]] += 1
+
+        var num_kinds = 0
+        var max_num = 0
+        for i in range(2, 15):
+            if counter[i]:
+                num_kinds += 1
+                max_num = math.max(max_num, counter[i])
+
+        if counter[1]:  # Joker
+            max_num += counter[1]
+
+        if num_kinds <= 1:
+            return 6  # Five of a kind
+
+        if num_kinds == 2:
+            return max_num + 1  # Four of a kind or Full house
+
+        if num_kinds == 3:
+            return max_num  # Three of a kind or Two pair
+
+        return 5 - num_kinds  # One pair or High card
+
+    fn __lt__(self, existing: Self) -> Bool:
+        let self_rank = self.rank()
+        let existing_rank = existing.rank()
+        if self_rank < existing_rank:
+            return True
+        if self_rank > existing_rank:
+            return False
+        for i in range(5):
+            if self.hand[i] < existing.hand[i]:
+                return True
+            if self.hand[i] > existing.hand[i]:
+                return False
+        return False
+
+
+fn bubble_sort2(inout hands: DynamicVector[Hand2]) -> NoneType:
+    let l3n = len(hands)
+    for i in range(l3n):
+        for j in range(1, l3n - i):
+            if hands[j] < hands[j - 1]:
+                let tmp = hands[j - 1]
+                hands[j - 1] = hands[j]
+                hands[j] = tmp
+
+
+fn solve2(s: String) raises -> Int:
+    let lines = s.split("\n")
+    var hands = DynamicVector[Hand2]()
+    for i in range(len(lines) - 1):
+        let line = lines[i].split(" ")
+        let hand_str = line[0]
+        let bid = atol(line[1])
+        let hand = Hand2(hand_str, bid)
+        hands.append(hand)
+
+    bubble_sort2(hands)
+    var total = 0
+    for i in range(len(hands)):
+        total += (i + 1) * hands[i].bid
+
+    return total
+
+
 fn main() raises:
     print(solve1(example))
     print(solve1(text))
+    print(solve2(example))
+    print(solve2(text))
 
 
 alias example = """32T3K 765
