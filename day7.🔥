@@ -123,20 +123,10 @@ struct Hand2(CollectionElement):
 
     @staticmethod
     fn strength(s: String) -> Int:
-        let c = ord(s[0])
-        if isdigit(c):
-            return c - ord(0)
-        if c == ord("A"):
-            return 14
-        if c == ord("K"):
-            return 13
-        if c == ord("Q"):
-            return 12
-        if c == ord("J"):
+        let num = Hand.strength(s)
+        if num == 11:  # Joker
             return 1
-        if c == ord("T"):
-            return 10
-        return 0  # Should never happen
+        return num
 
     fn rank(self) -> Int:
         var counter = DynamicVector[Int](15)
