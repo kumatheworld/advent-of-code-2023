@@ -1,4 +1,5 @@
 from utils.vector import UnsafeFixedVector
+import math
 
 # Wish InlineFixedVector could be used, but 26**3 would be way too large
 alias Network = UnsafeFixedVector[StaticIntTuple[2]]
@@ -7,7 +8,8 @@ alias Network = UnsafeFixedVector[StaticIntTuple[2]]
 fn hash_cap3(s: String) -> Int:
     var total = 0
     for i in range(3):
-        total = 26 * total + (ord(s[i]) - ord("A"))
+        # This happens to work for example2 as well
+        total = 26 * total + (ord(s[i]) - ord("A")) % 26
     return total
 
 
@@ -51,12 +53,50 @@ fn solve1(s: String) raises -> Int:
     return -1  # Should never happen
 
 
+fn nodes_endswith(suffix: String, lines: DynamicVector[String]) -> DynamicVector[Int]:
+    var nodes = DynamicVector[Int]()
+    for i in range(2, len(lines) - 1):
+        let line = lines[i]
+        if line[2] == suffix:
+            nodes.append(hash_cap3(line[:3]))
+    return nodes
+
+
+fn solve2(s: String) raises -> Int:
+    let lines = s.split("\n")
+    let directions = parse_directions(lines)
+    let network = parse_network(lines)
+    let initial_nodes = nodes_endswith("A", lines)
+    let terminal_nodes = nodes_endswith("Z", lines)
+
+    # This somehow causes the Mojo Language Client server to crash
+    fn steps_from(initial_node: Int) -> Int:
+        var idx = initial_node
+        for i in range(26**3):
+            for j in range(len(directions)):
+                idx = network[idx][directions[j]]
+                for h in range(len(terminal_nodes)):  # Wish in could be used
+                    if idx == terminal_nodes[h]:
+                        let steps = i * len(directions) + j + 1
+                        return steps
+        return -1  # Should never happen
+
+    var steps_lcm = 1
+    for k in range(len(initial_nodes)):
+        let steps = steps_from(initial_nodes[k])
+        steps_lcm = math.lcm(steps_lcm, steps)
+
+    return steps_lcm
+
+
 fn main() raises:
-    print(solve1(example))
+    print(solve1(example1))
     print(solve1(text))
+    print(solve2(example2))
+    print(solve2(text))
 
 
-alias example = """RL
+alias example1 = """RL
 
 AAA = (BBB, CCC)
 BBB = (DDD, EEE)
