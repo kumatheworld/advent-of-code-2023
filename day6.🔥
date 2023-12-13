@@ -10,6 +10,7 @@ fn parse_ints(line: String) raises -> DynamicVector[Int]:
 
 
 fn num_ways(time: Int, distance: Int) -> Int:
+    # Direct solution by sqrt() would work if it accepted float or int64
     var a = 0
     var b = time
     while b - a > 1:
