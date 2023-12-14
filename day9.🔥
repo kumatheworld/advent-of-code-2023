@@ -1,3 +1,6 @@
+import math
+
+
 fn parse_seq(line: String) raises -> DynamicVector[Int]:
     let numbers_str = line.split(" ")
     var numbers = DynamicVector[Int]()
@@ -20,6 +23,22 @@ fn predict_next(owned seq: DynamicVector[Int]) -> Int:
     return 0  # Should never happen
 
 
+fn predict_prev(owned seq: DynamicVector[Int]) -> Int:
+    var total = seq[0]
+    for i in range(len(seq) - 1, 0, -1):
+        var nonzero = False
+        for j in range(i):
+            seq[j] = seq[j + 1] - seq[j]
+            nonzero = nonzero or seq[j]
+        if math.is_odd(len(seq) - i):
+            total -= seq[0]
+        else:
+            total += seq[0]
+        if not nonzero:
+            return total
+    return 0  # Should never happen
+
+
 fn solve1(s: String) raises -> Int:
     let lines = s.split("\n")
     var total = 0
@@ -30,9 +49,21 @@ fn solve1(s: String) raises -> Int:
     return total
 
 
+fn solve2(s: String) raises -> Int:
+    let lines = s.split("\n")
+    var total = 0
+    for i in range(len(lines) - 1):
+        let seq = parse_seq(lines[i])
+        let value = predict_prev(seq)
+        total += value
+    return total
+
+
 fn main() raises:
     print(solve1(example))
     print(solve1(text))
+    print(solve2(example))
+    print(solve2(text))
 
 
 alias example = """0 3 6 9 12 15
