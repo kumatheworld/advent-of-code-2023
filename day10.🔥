@@ -44,33 +44,89 @@ fn forward(fr0m: StaticIntTuple[2], symbol: String) -> StaticIntTuple[2]:
     return StaticIntTuple[2](0, 0)  # Should never happen
 
 
-fn solve1(s: String) -> Int:
-    let ls = Landscape(s)
+fn compute_circuit(ls: Landscape) -> DynamicVector[Tuple[Int, Int]]:
     let id_S = ls.id_S
 
-    # Cheating: the symbol below S happens to be |, so you can start from there
+    # Cheating: in all the cases, you can happen to start downward
     var di = 1
     var dj = 0
     var i = ls.id_S[0] + di
     var j = ls.id_S[1] + dj
-    var symbol = String("|")
+    var symbol = ls[StaticIntTuple[2](i, j)]
 
-    for k in range(2, len(s)):
+    var circuit = DynamicVector[Tuple[Int, Int]]()
+    circuit.append((ls.id_S[0], ls.id_S[1]))
+    for _ in range(len(ls.landscape)):
+        circuit.append((i, j))
         let d = forward(StaticIntTuple[2](di, dj), symbol)
         di, dj = d[0], d[1]
         i += di
         j += dj
         symbol = ls[StaticIntTuple[2](i, j)]
         if symbol == "S":
-            return k // 2
+            break
 
-    return -1
+    return circuit
+
+
+fn solve1(s: String) -> Int:
+    let ls = Landscape(s)
+    return len(compute_circuit(ls)) // 2
+
+
+fn solve2(s: String) -> Int:
+    let ls = Landscape(s)
+    let id_S = ls.id_S
+    let circuit = compute_circuit(s)
+    let circuit_end = circuit[len(circuit) - 1]
+
+    var total = 0
+    for i in range(ls.height):
+        for j in range(ls.width - 1):
+            let symbol = ls[StaticIntTuple[2](i, j)]
+            var angle_sum = Float64(0)
+            var ui = circuit_end.get[0, Int]() - i
+            var uj = circuit_end.get[1, Int]() - j
+            if ui == 0 and uj == 0:  # (i, j) happens to be circuit_end
+                continue
+
+            for k in range(len(circuit)):
+                let vi = circuit[k].get[0, Int]() - i
+                let vj = circuit[k].get[1, Int]() - j
+                if vi == 0 and vj == 0:  # circuit happens to contain (i, j)
+                    break
+
+                let norm_u = math.hypot[DType.float64, 1](ui, uj)
+                let norm_v = math.hypot[DType.float64, 1](vi, vj)
+                let norm_uv = norm_u * norm_v
+                let inner_prod = ui * vi + uj * vj
+                let angle_pos = math.acos(inner_prod / norm_uv)
+
+                let determinant = ui * vj - uj * vi
+                if determinant > 0:
+                    angle_sum += angle_pos
+                else:
+                    angle_sum -= angle_pos
+
+                ui = vi
+                uj = vj
+            else:
+                # Now angle_sum should be either -2*pi, 0, or 2*pi
+                # The point is outside iff angle_sum is 0
+                if math.abs(angle_sum) > 3:
+                    total += 1
+    return total
 
 
 fn main():
     print(solve1(example1))
     print(solve1(example2))
     print(solve1(text))
+    print(solve2(example3))
+    print(solve2(example4))
+    print(solve2(example5))
+    print(solve2(example6))
+    print(solve2(text))  # a bit heavy but runs
 
 
 alias example1 = """.....
@@ -85,6 +141,52 @@ alias example2 = """..F7.
 SJ.L7
 |F--J
 LJ...
+"""
+
+alias example3 = """...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........
+"""
+
+alias example4 = """..........
+.S------7.
+.|F----7|.
+.||....||.
+.||....||.
+.|L-7F-J|.
+.|..||..|.
+.L--JL--J.
+..........
+"""
+
+alias example5 = """.F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ...
+"""
+
+alias example6 = """FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L
 """
 
 alias text = """7-L7|F--F7F-|-FF--|FFL|7.FFL7|FL-F|-LL77FFJFL-7.FF-J.F77.7.F7F777-77.FF-LF7F.JJ.F7|-|.FFJF7..77F7|-7-FF7.|-F77L-|-|-77.F77FLJ7.F-LL--F7FL7.J
