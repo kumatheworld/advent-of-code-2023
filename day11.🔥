@@ -1,7 +1,7 @@
 import math
 
 
-fn solve1(s: String) -> Int:
+fn solve(s: String, factor: Int = 2) -> Int:
     # Compute width and height
     var width = 0
     for k in range(len(s)):
@@ -43,14 +43,14 @@ fn solve1(s: String) -> Int:
         for ii in range(len(missing_is)):
             if i < missing_is[ii]:
                 break
-            ie += 1
+            ie += factor - 1
 
         let j = sharps[k].get[1, Int]()
         var je = j
         for jj in range(len(missing_js)):
             if j < missing_js[jj]:
                 break
-            je += 1
+            je += factor - 1
 
         sharps[k] = (ie, je)
 
@@ -68,8 +68,11 @@ fn solve1(s: String) -> Int:
 
 
 fn main():
-    print(solve1(example))
-    print(solve1(text))
+    print(solve(example))
+    print(solve(text))
+    print(solve(example, factor=10))
+    print(solve(example, factor=100))
+    print(solve(text, factor=1_000_000))
 
 
 alias example = """...#......
