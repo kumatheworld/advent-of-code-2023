@@ -2,7 +2,7 @@ from algorithm.sort import sort
 from math.bit import ctpop
 
 
-# Can this be made return (line[:space], conditions)?
+# Can this be made return (line[:space], damaged)?
 # parse_line(line).get doesn't work
 fn parse_line(inout line: String) raises -> DynamicVector[Int]:
     var space = 0
@@ -11,13 +11,13 @@ fn parse_line(inout line: String) raises -> DynamicVector[Int]:
             space = i
             break
 
-    var conditions = DynamicVector[Int]()
-    let conditions_str = line[space + 1 :].split(",")
-    for i in range(len(conditions_str)):
-        conditions.append(atol(conditions_str[i]))
+    var damaged = DynamicVector[Int]()
+    let damaged_str = line[space + 1 :].split(",")
+    for i in range(len(damaged_str)):
+        damaged.append(atol(damaged_str[i]))
 
     line = line[:space]
-    return conditions
+    return damaged
 
 
 fn solve1(s: String) raises -> Int:
@@ -25,7 +25,7 @@ fn solve1(s: String) raises -> Int:
     var total = 0
     for i in range(len(lines) - 1):
         var line = lines[i]
-        let conditions = parse_line(line)
+        let damaged = parse_line(line)
 
         var sharps_org = DynamicVector[Int]()
         var questions = DynamicVector[Int]()
@@ -36,8 +36,8 @@ fn solve1(s: String) raises -> Int:
                 questions.append(j)
 
         var num_remaining_sharps = -len(sharps_org)
-        for k in range(len(conditions)):
-            num_remaining_sharps += conditions[k]
+        for k in range(len(damaged)):
+            num_remaining_sharps += damaged[k]
 
         # Brute force; consider all the 2^len(questions) cases
         # Those with an inappropriate number of sharps are rejected immediately
@@ -54,11 +54,11 @@ fn solve1(s: String) raises -> Int:
                     sharps.append(questions[j])
             sort(sharps)
 
-            # Check if sharps has the pattern with conditions
+            # Check if sharps has the pattern with damaged
             var current_id = 0
             var previous_value = -2
-            for j in range(len(conditions)):
-                for k in range(conditions[j]):
+            for j in range(len(damaged)):
+                for k in range(damaged[j]):
                     if (k > 0) != (sharps[current_id] == previous_value + 1):
                         break
                     previous_value = sharps[current_id]
