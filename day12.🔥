@@ -20,57 +20,59 @@ fn parse_line(inout line: String) raises -> DynamicVector[Int]:
     return damaged
 
 
+fn solve_line(conditions: String, damaged: DynamicVector[Int]) -> Int:
+    var sharps_org = DynamicVector[Int]()
+    var questions = DynamicVector[Int]()
+    for j in range(len(conditions)):
+        if conditions[j] == "#":
+            sharps_org.append(j)
+        elif conditions[j] == "?":
+            questions.append(j)
+
+    var num_remaining_sharps = -len(sharps_org)
+    for k in range(len(damaged)):
+        num_remaining_sharps += damaged[k]
+
+    # Brute force; consider all the 2^len(questions) cases
+    # Those with an inappropriate number of sharps are rejected immediately
+    var total_line = 0
+    for bits in range(1 << len(questions)):
+        if ctpop[DType.int32, 1](bits) != num_remaining_sharps:
+            continue
+
+        var sharps = DynamicVector[Int]()
+        for j in range(len(sharps_org)):
+            sharps.append(sharps_org[j])
+        for j in range(len(questions)):
+            if bits & (1 << j):
+                sharps.append(questions[j])
+        sort(sharps)
+
+        # Check if sharps has the pattern with damaged
+        var current_id = 0
+        var previous_value = -2
+        for j in range(len(damaged)):
+            for k in range(damaged[j]):
+                if (k > 0) != (sharps[current_id] == previous_value + 1):
+                    break
+                previous_value = sharps[current_id]
+                current_id += 1
+            else:
+                continue
+            break
+        else:
+            total_line += 1
+
+    return total_line
+
+
 fn solve1(s: String) raises -> Int:
     let lines = s.split("\n")
     var total = 0
     for i in range(len(lines) - 1):
         var line = lines[i]
         let damaged = parse_line(line)
-
-        var sharps_org = DynamicVector[Int]()
-        var questions = DynamicVector[Int]()
-        for j in range(len(line)):
-            if line[j] == "#":
-                sharps_org.append(j)
-            elif line[j] == "?":
-                questions.append(j)
-
-        var num_remaining_sharps = -len(sharps_org)
-        for k in range(len(damaged)):
-            num_remaining_sharps += damaged[k]
-
-        # Brute force; consider all the 2^len(questions) cases
-        # Those with an inappropriate number of sharps are rejected immediately
-        var total_line = 0
-        for bits in range(1 << len(questions)):
-            if ctpop[DType.int32, 1](bits) != num_remaining_sharps:
-                continue
-
-            var sharps = DynamicVector[Int]()
-            for j in range(len(sharps_org)):
-                sharps.append(sharps_org[j])
-            for j in range(len(questions)):
-                if bits & (1 << j):
-                    sharps.append(questions[j])
-            sort(sharps)
-
-            # Check if sharps has the pattern with damaged
-            var current_id = 0
-            var previous_value = -2
-            for j in range(len(damaged)):
-                for k in range(damaged[j]):
-                    if (k > 0) != (sharps[current_id] == previous_value + 1):
-                        break
-                    previous_value = sharps[current_id]
-                    current_id += 1
-                else:
-                    continue
-                break
-            else:
-                total_line += 1
-
-        total += total_line
-
+        total += solve_line(line, damaged)
     return total
 
 
