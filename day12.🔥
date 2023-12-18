@@ -20,50 +20,66 @@ fn parse_line(inout line: String) raises -> DynamicVector[Int]:
     return damaged
 
 
-fn solve_line(conditions: String, damaged: DynamicVector[Int]) -> Int:
-    var sharps_org = DynamicVector[Int]()
-    var questions = DynamicVector[Int]()
-    for j in range(len(conditions)):
-        if conditions[j] == "#":
-            sharps_org.append(j)
-        elif conditions[j] == "?":
-            questions.append(j)
+fn solve_line_sharp(
+    conditions: String,
+    damaged: DynamicVector[Int],
+    end_conditions: Int,
+    end_damaged: Int,
+) -> Int:
+    # Now conditions[end_conditions] == "#" is guaranteed
+    # Check if the last can be a dot followed by damaged[end_damaged - 1]-many #'s
+    let start = end_conditions - damaged[end_damaged - 1]
+    if start < -1:
+        return 0
 
-    var num_remaining_sharps = -len(sharps_org)
-    for k in range(len(damaged)):
-        num_remaining_sharps += damaged[k]
+    if start >= 0 and conditions[start] == "#":
+        return 0
 
-    # Brute force; consider all the 2^len(questions) cases
-    # Those with an inappropriate number of sharps are rejected immediately
-    var total_line = 0
-    for bits in range(1 << len(questions)):
-        if ctpop[DType.int32, 1](bits) != num_remaining_sharps:
+    for j in range(start + 1, end_conditions):
+        if conditions[j] == ".":
+            return 0
+
+    return solve_line(
+        conditions,
+        damaged,
+        end_conditions=start,
+        end_damaged=end_damaged - 1,
+    )
+
+
+# Nested functions crash for some reason
+fn solve_line(
+    conditions: String,
+    damaged: DynamicVector[Int],
+    end_conditions: Int,
+    end_damaged: Int,
+) -> Int:
+    if end_damaged == 0:
+        for i in range(end_conditions):
+            if conditions[i] == "#":
+                return 0
+        return 1
+
+    for i in range(end_conditions - 1, -1, -1):
+        # Skip last dots
+        if conditions[i] == ".":
             continue
 
-        var sharps = DynamicVector[Int]()
-        for j in range(len(sharps_org)):
-            sharps.append(sharps_org[j])
-        for j in range(len(questions)):
-            if bits & (1 << j):
-                sharps.append(questions[j])
-        sort(sharps)
+        # Consider the case conditions[i] == "#" since it's necessary either way
+        let sharp = solve_line_sharp(conditions, damaged, i, end_damaged)
+        if conditions[i] == "#":
+            return sharp
 
-        # Check if sharps has the pattern with damaged
-        var current_id = 0
-        var previous_value = -2
-        for j in range(len(damaged)):
-            for k in range(damaged[j]):
-                if (k > 0) != (sharps[current_id] == previous_value + 1):
-                    break
-                previous_value = sharps[current_id]
-                current_id += 1
-            else:
-                continue
-            break
-        else:
-            total_line += 1
+        # If conditions[i] == "?", consider the both
+        let dot = solve_line(
+            conditions,
+            damaged,
+            end_conditions=i,
+            end_damaged=end_damaged,
+        )
+        return sharp + dot
 
-    return total_line
+    return 0
 
 
 fn solve1(s: String) raises -> Int:
@@ -72,7 +88,8 @@ fn solve1(s: String) raises -> Int:
     for i in range(len(lines) - 1):
         var line = lines[i]
         let damaged = parse_line(line)
-        total += solve_line(line, damaged)
+        let total_line = solve_line(line, damaged, len(line), len(damaged))
+        total += total_line
     return total
 
 
