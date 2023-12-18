@@ -82,20 +82,30 @@ fn solve_line(
     return 0
 
 
-fn solve1(s: String) raises -> Int:
+fn solve(s: String, repeat: Int = 1) raises -> Int:
     let lines = s.split("\n")
     var total = 0
     for i in range(len(lines) - 1):
         var line = lines[i]
-        let damaged = parse_line(line)
+        var damaged = parse_line(line)
+
+        let conditions = line
+        let r4nge = range(len(damaged))
+        for _ in range(repeat - 1):
+            line += "?" + conditions
+            for j in r4nge:
+                damaged.append(damaged[j])
+
         let total_line = solve_line(line, damaged, len(line), len(damaged))
         total += total_line
     return total
 
 
 fn main() raises:
-    print(solve1(example))
-    print(solve1(text))
+    print(solve(example))
+    print(solve(text))
+    print(solve(example, repeat=5))
+    print(solve(text, repeat=5))
 
 
 alias example = """???.### 1,1,3
