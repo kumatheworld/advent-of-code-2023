@@ -1,32 +1,58 @@
-fn solve(s: String) raises -> Int:
-    var width = -1
-    for i in range(len(s)):
-        if s[i] == "\n":
-            width = i + 1
-            break
-    let height = len(s) // width
+struct Platform:
+    var width: Int
+    var height: Int
+    var sharps: DynamicVector[Tuple[Int, Int]]
+    var Os: DynamicVector[Tuple[Int, Int]]
 
-    var total = 0
-    for j in range(width - 1):
-        var sharp = height
-        var O = 0
-        var total_line = 0
-        for i in range(height):
-            if s[width * i + j] == "O":
-                O += 1
-            elif s[width * i + j] == "#":
-                total_line += O * (2 * sharp - O + 1) // 2
-                sharp = height - i - 1
-                O = 0
-        total_line += O * (2 * sharp - O + 1) // 2
-        total += total_line
+    fn __init__(inout self, s: String):
+        var width = -1
+        for i in range(len(s)):
+            if s[i] == "\n":
+                width = i + 1
+                break
+        self.width = width
+        let height = len(s) // width
+        self.height = height
 
-    return total
+        # Tilt the platform to the north and compute the total load
+        var sharps = DynamicVector[Tuple[Int, Int]]()
+        var Os = DynamicVector[Tuple[Int, Int]]()
+        for j in range(width - 1):
+            var sharp = height
+            var O = 0
+            for i in range(height):
+                if s[width * i + j] == "O":
+                    O += 1
+
+                if s[width * i + j] == "#" or i == height - 1:
+                    for ii in range(height - sharp, height - sharp + O):
+                        Os.append((ii, j))
+
+                    if s[width * i + j] == "#":
+                        sharps.append((i, j))
+                        sharp = height - i - 1
+                        O = 0
+
+        self.sharps = sharps
+        self.Os = Os
+
+    fn total_load(self) -> Int:
+        # Assume that it's tilted to the north
+        let Os = self.Os
+        var total = self.height * len(Os)
+        for k in range(len(Os)):
+            total -= Os[k].get[0, Int]()
+        return total
+
+
+fn solve1(s: String) raises -> Int:
+    let platform = Platform(s)
+    return platform.total_load()
 
 
 fn main() raises:
-    print(solve(example))
-    print(solve(text))
+    print(solve1(example))
+    print(solve1(text))
 
 
 alias example = """O....#....
