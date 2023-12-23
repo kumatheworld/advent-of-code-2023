@@ -9,7 +9,7 @@ struct Landscape:
     var height: Int
     var id_S: StaticIntTuple[2]
 
-    fn __init__(inout self, landscape: String):
+    fn __init__(inout self, landscape: String) -> NoneType:
         self.landscape = landscape
 
         var width: Int  # Could conceivably be let

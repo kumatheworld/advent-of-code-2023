@@ -4,7 +4,7 @@ struct Platform:
     var sharps: DynamicVector[Tuple[Int, Int]]
     var Os: DynamicVector[Tuple[Int, Int]]
 
-    fn __init__(inout self, s: String):
+    fn __init__(inout self, s: String) -> NoneType:
         var width = -1
         for i in range(len(s)):
             if s[i] == "\n":
