@@ -44,15 +44,53 @@ struct Platform:
             total -= Os[k].get[0, Int]()
         return total
 
+    fn cycle(inout self) -> NoneType:
+        # Tilt the platform to west, south, east, and north
+        # Sort Os and sharps first
+        pass
+
 
 fn solve1(s: String) raises -> Int:
     let platform = Platform(s)
     return platform.total_load()
 
 
+fn solve2(s: String, reps: Int = 1_000_000_000) raises -> Int:
+    var platform = Platform(s)
+    var Os_history = DynamicVector[Tuple[Int, Int]]()
+    var total_load_history = DynamicVector[Int]()
+    for i in range(reps):
+        platform.cycle()
+        let Os = platform.Os
+
+        for j in range(i):
+            let offset = j * len(Os)
+            for k in range(len(Os)):
+                # Tuples don't implement __ne__
+                let p = Os_history[offset + k]
+                let q = Os[k]
+                if (
+                    p.get[0, Int]() != q.get[0, Int]()
+                    or p.get[1, Int]() != q.get[1, Int]()
+                ):
+                    break
+            else:
+                let idx = i - 1 + (reps - j) % (i - j)
+                return total_load_history[idx]
+
+        for k in range(len(Os)):
+            Os_history.append(Os[k])
+
+        total_load_history.append(platform.total_load())
+
+    return total_load_history[len(total_load_history) - 1]  # Should never happen
+
+
 fn main() raises:
-    print(solve1(example))
-    print(solve1(text))
+    # print(solve1(example))
+    # print(solve1(text))
+    print(solve2(example))
+    # print(solve2(text))
 
 
 alias example = """O....#....
