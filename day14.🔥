@@ -47,7 +47,23 @@ struct Platform:
     fn cycle(inout self) -> NoneType:
         # Tilt the platform to west, south, east, and north
         # Sort Os and sharps first
-        pass
+
+        # Assume it's sorted
+        # Basically you have to push Os leftward
+        let sharps = self.sharps
+        let Os = self.Os
+        var Os_new = DynamicVector[Tuple[Int, Int]](len(Os))
+        var o = 0
+        var oi = Os[0].get[0, Int]()
+        var oj = Os[0].get[1, Int]()
+        for k in range(len(sharps)):
+            let i = sharps[k].get[0, Int]()
+            let j = sharps[k].get[1, Int]()
+            while oi == i and oj < j:
+                Os_new.append((oi, oj))
+                o += 1
+                oi = Os[o].get[0, Int]()
+                oj = Os[o].get[0, Int]()
 
 
 fn solve1(s: String) raises -> Int:
