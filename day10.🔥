@@ -1,6 +1,6 @@
 import math
 
-from utils.vector import InlinedFixedVector
+from collections.vector import InlinedFixedVector
 
 
 struct Landscape:

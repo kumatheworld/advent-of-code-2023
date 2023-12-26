@@ -1,4 +1,4 @@
-from utils.vector import InlinedFixedVector
+from collections.vector import InlinedFixedVector
 
 
 fn solve1(s: String) -> Int:

@@ -1,4 +1,4 @@
-from utils.vector import UnsafeFixedVector
+from collections.vector import UnsafeFixedVector
 import math
 
 # Wish InlineFixedVector could be used, but 26**3 would be way too large
