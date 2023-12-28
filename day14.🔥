@@ -1,36 +1,34 @@
 struct Platform:
-    var width: Int
-    var height: Int
+    var size: Int
     var sharps: DynamicVector[Tuple[Int, Int]]
     var Os: DynamicVector[Tuple[Int, Int]]
 
     fn __init__(inout self, s: String) -> NoneType:
-        var width = -1
+        var size = -1
         for i in range(len(s)):
             if s[i] == "\n":
-                width = i + 1
+                size = i
                 break
-        self.width = width
-        let height = len(s) // width
-        self.height = height
+        self.size = size
 
         # Tilt the platform to the north and compute the total load
         var sharps = DynamicVector[Tuple[Int, Int]]()
         var Os = DynamicVector[Tuple[Int, Int]]()
-        for j in range(width - 1):
-            var sharp = height
+        for j in range(size):
+            var sharp = size
             var O = 0
-            for i in range(height):
-                if s[width * i + j] == "O":
+            for i in range(size):
+                let symbol = s[(size + 1) * i + j]
+                if symbol == "O":
                     O += 1
 
-                if s[width * i + j] == "#" or i == height - 1:
-                    for ii in range(height - sharp, height - sharp + O):
+                if symbol == "#" or i == size - 1:
+                    for ii in range(size - sharp, size - sharp + O):
                         Os.append((ii, j))
 
-                    if s[width * i + j] == "#":
+                    if symbol == "#":
                         sharps.append((i, j))
-                        sharp = height - i - 1
+                        sharp = size - i - 1
                         O = 0
 
         self.sharps = sharps
@@ -39,7 +37,7 @@ struct Platform:
     fn total_load(self) -> Int:
         # Assume that it's tilted to the north
         let Os = self.Os
-        var total = self.height * len(Os)
+        var total = self.size * len(Os)
         for k in range(len(Os)):
             total -= Os[k].get[0, Int]()
         return total
