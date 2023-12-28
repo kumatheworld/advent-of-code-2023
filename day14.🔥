@@ -1,7 +1,11 @@
+alias Placement = DynamicVector[DynamicVector[Int]]
+
+
 struct Platform:
     var size: Int
-    var sharps: DynamicVector[Tuple[Int, Int]]
-    var Os: DynamicVector[Tuple[Int, Int]]
+    var sharps: Placement
+    var Os: Placement
+    var num_Os: Int
 
     fn __init__(inout self, s: String) -> NoneType:
         var size = -1
@@ -12,8 +16,13 @@ struct Platform:
         self.size = size
 
         # Tilt the platform to the north and compute the total load
-        var sharps = DynamicVector[Tuple[Int, Int]]()
-        var Os = DynamicVector[Tuple[Int, Int]]()
+        var sharps = Placement(size)
+        var Os = Placement(size)
+        for _ in range(size):
+            sharps.append(DynamicVector[Int]())
+            Os.append(DynamicVector[Int]())
+
+        var num_Os = 0
         for j in range(size):
             var sharp = size
             var O = 0
@@ -21,47 +30,56 @@ struct Platform:
                 let symbol = s[(size + 1) * i + j]
                 if symbol == "O":
                     O += 1
+                    num_Os += 1
 
                 if symbol == "#" or i == size - 1:
                     for ii in range(size - sharp, size - sharp + O):
-                        Os.append((ii, j))
+                        Os[j].append(ii)
 
                     if symbol == "#":
-                        sharps.append((i, j))
+                        sharps[j].append(i)
                         sharp = size - i - 1
                         O = 0
 
         self.sharps = sharps
         self.Os = Os
+        self.num_Os = num_Os
 
     fn total_load(self) -> Int:
         # Assume that it's tilted to the north
         let Os = self.Os
-        var total = self.size * len(Os)
-        for k in range(len(Os)):
-            total -= Os[k].get[0, Int]()
+        var total = self.size * self.num_Os
+        for i in range(self.size):
+            let Osi = Os[i]
+            for j in range(len(Osi)):
+                total -= Osi[j]
         return total
 
     fn cycle(inout self) -> NoneType:
         # Tilt the platform to west, south, east, and north
-        # Sort Os and sharps first
-
-        # Assume it's sorted
-        # Basically you have to push Os leftward
         let sharps = self.sharps
         let Os = self.Os
-        var Os_new = DynamicVector[Tuple[Int, Int]](len(Os))
-        var o = 0
-        var oi = Os[0].get[0, Int]()
-        var oj = Os[0].get[1, Int]()
-        for k in range(len(sharps)):
-            let i = sharps[k].get[0, Int]()
-            let j = sharps[k].get[1, Int]()
-            while oi == i and oj < j:
-                Os_new.append((oi, oj))
-                o += 1
-                oi = Os[o].get[0, Int]()
-                oj = Os[o].get[0, Int]()
+
+        # # West
+        # # Sort Os and sharps rowwise first
+        # var Os2 = DynamicVector[DynamicVector[Int]]()
+        # for k in range(len(Os)):
+        #     print(Os[k].get[0, Int](), Os[k].get[1, Int]())
+        # return
+
+        # # Move Os to the west
+        # var Os_new = DynamicVector[Tuple[Int, Int]](len(Os))
+        # var o = 0
+        # var oi = Os[0].get[0, Int]()
+        # var oj = Os[0].get[1, Int]()
+        # for k in range(len(sharps)):
+        #     let i = sharps[k].get[0, Int]()
+        #     let j = sharps[k].get[1, Int]()
+        #     while oi == i and oj < j:
+        #         Os_new.append((oi, oj))
+        #         o += 1
+        #         oi = Os[o].get[0, Int]()
+        #         oj = Os[o].get[1, Int]()
 
 
 fn solve1(s: String) raises -> Int:
@@ -71,7 +89,8 @@ fn solve1(s: String) raises -> Int:
 
 fn solve2(s: String, reps: Int = 1_000_000_000) raises -> Int:
     var platform = Platform(s)
-    var Os_history = DynamicVector[DynamicVector[Tuple[Int, Int]]]()
+    let size = platform.size
+    var Os_history = DynamicVector[Placement]()
     var total_load_history = DynamicVector[Int]()
     for i in range(reps):
         platform.cycle()
@@ -79,15 +98,18 @@ fn solve2(s: String, reps: Int = 1_000_000_000) raises -> Int:
 
         for j in range(i):
             let Osj = Os_history[j]
-            for k in range(len(Os)):
-                # Tuples don't implement __ne__
-                let p = Osj[k]
-                let q = Os[k]
-                if (
-                    p.get[0, Int]() != q.get[0, Int]()
-                    or p.get[1, Int]() != q.get[1, Int]()
-                ):
+            for k in range(size):
+                let Osjk = Osj[k]
+                let Osk = Os[k]
+                # Why does the program stop here?
+                if len(Osjk) != len(Osk):
                     break
+                for kk in range(len(Osk)):
+                    if Osjk[kk] != Osk[kk]:
+                        break
+                else:
+                    continue
+                break
             else:
                 let idx = i - 1 + (reps - j) % (i - j)
                 return total_load_history[idx]
@@ -100,10 +122,10 @@ fn solve2(s: String, reps: Int = 1_000_000_000) raises -> Int:
 
 
 fn main() raises:
-    # print(solve1(example))
-    # print(solve1(text))
+    print(solve1(example))
+    print(solve1(text))
     print(solve2(example))
-    # print(solve2(text))
+    print(solve2(text))
 
 
 alias example = """O....#....
