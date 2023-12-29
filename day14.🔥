@@ -97,15 +97,15 @@ fn solve2(s: String, reps: Int = 1_000_000_000) raises -> Int:
         let Os = platform.Os
 
         for j in range(i):
-            let Osj = Os_history[j]
+            let Oshj = Os_history[j]
             for k in range(size):
-                let Osjk = Osj[k]
-                let Osk = Os[k]
-                # Why does the program stop here?
-                if len(Osjk) != len(Osk):
+                # Why does the following crash?
+                # let Oshjk = Oshj[k]
+                # let Osk = Os[k]
+                if len(Oshj[k]) != len(Os[k]):
                     break
-                for kk in range(len(Osk)):
-                    if Osjk[kk] != Osk[kk]:
+                for kk in range(len(Os[k])):
+                    if Oshj[k][kk] != Os[k][kk]:
                         break
                 else:
                     continue
