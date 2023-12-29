@@ -114,7 +114,14 @@ fn solve2(s: String, reps: Int = 1_000_000_000) raises -> Int:
                 let idx = i - 1 + (reps - j) % (i - j)
                 return total_load_history[idx]
 
-        Os_history.append(Os)
+        var Os_copy = Placement(size)
+        for j in range(size):
+            let Osj = Os[j]
+            var Os_copy_column = DynamicVector[Int]()
+            for i in range(len(Osj)):
+                Os_copy_column.append(Osj[i])
+            Os_copy.append(Os_copy_column)
+        Os_history.append(Os_copy)
 
         total_load_history.append(platform.total_load())
 
