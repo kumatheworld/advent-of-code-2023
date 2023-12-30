@@ -1,6 +1,13 @@
 alias Placement = DynamicVector[DynamicVector[Int]]
 
 
+fn init_placement(size: Int) -> Placement:
+    var p = Placement(size)
+    for _ in range(size):
+        p.append(DynamicVector[Int]())
+    return p
+
+
 struct Platform:
     var size: Int
     var sharps: Placement
@@ -16,11 +23,8 @@ struct Platform:
         self.size = size
 
         # Tilt the platform to the north and compute the total load
-        var sharps = Placement(size)
-        var Os = Placement(size)
-        for _ in range(size):
-            sharps.append(DynamicVector[Int]())
-            Os.append(DynamicVector[Int]())
+        var sharps = init_placement(size)
+        var Os = init_placement(size)
 
         var num_Os = 0
         for j in range(size):
