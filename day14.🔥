@@ -61,29 +61,24 @@ struct Platform:
 
     fn cycle(inout self) -> NoneType:
         # Tilt the platform to west, south, east, and north
+        let size = self.size
         let sharps = self.sharps
         let Os = self.Os
 
-        # # West
-        # # Sort Os and sharps rowwise first
-        # var Os2 = DynamicVector[DynamicVector[Int]]()
-        # for k in range(len(Os)):
-        #     print(Os[k].get[0, Int](), Os[k].get[1, Int]())
-        # return
+        # West
+        # Sort Os and sharps rowwise first
+        var sharps2 = init_placement(size)
+        var Os2 = init_placement(size)
+        for j in range(size):
+            let sj = sharps[j]
+            let oj = Os[j]
+            for i in range(len(sj)):
+                sharps2[sj[i]].append(j)
+            for i in range(len(oj)):
+                Os2[oj[i]].append(j)
 
-        # # Move Os to the west
-        # var Os_new = DynamicVector[Tuple[Int, Int]](len(Os))
-        # var o = 0
-        # var oi = Os[0].get[0, Int]()
-        # var oj = Os[0].get[1, Int]()
-        # for k in range(len(sharps)):
-        #     let i = sharps[k].get[0, Int]()
-        #     let j = sharps[k].get[1, Int]()
-        #     while oi == i and oj < j:
-        #         Os_new.append((oi, oj))
-        #         o += 1
-        #         oi = Os[o].get[0, Int]()
-        #         oj = Os[o].get[1, Int]()
+        # Move Os to the west
+        # var Os_new = init_placement(size)
 
 
 fn solve1(s: String) raises -> Int:
