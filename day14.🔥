@@ -78,7 +78,21 @@ struct Platform:
                 Os2[oj[i]].append(j)
 
         # Move Os to the west
-        # var Os_new = init_placement(size)
+        var Os_new = init_placement(size)
+        for i in range(size):
+            var j = 0
+            var sharp = -1
+            var ko = 0
+            let Oi = Os2[i]
+            let si = sharps2[i]
+            var Oni = Os_new[i]
+            for ks in range(len(si)):
+                sharp = si[ks]
+                if Oi[ko] > sharp:
+                    break
+                Oni.append(j)
+                j += 1
+                ko += 1
 
 
 fn solve1(s: String) raises -> Int:
