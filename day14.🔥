@@ -62,37 +62,40 @@ struct Platform:
     fn cycle(inout self) -> NoneType:
         # Tilt the platform to west, south, east, and north
         let size = self.size
-        let sharps = self.sharps
-        let Os = self.Os
 
         # West
         # Sort Os and sharps rowwise first
-        var sharps2 = init_placement(size)
-        var Os2 = init_placement(size)
+        var sharps = init_placement(size)
+        var Os = init_placement(size)
         for j in range(size):
-            let sj = sharps[j]
-            let oj = Os[j]
+            let sj = self.sharps[j]
+            let oj = self.Os[j]
             for i in range(len(sj)):
-                sharps2[sj[i]].append(j)
+                sharps[sj[i]].append(j)
             for i in range(len(oj)):
-                Os2[oj[i]].append(j)
+                Os[oj[i]].append(j)
 
         # Move Os to the west
-        var Os_new = init_placement(size)
         for i in range(size):
-            var j = 0
+            let si = sharps[i]
+            # var Oi = Os[i]
+            var sid = 0
             var sharp = -1
-            var ko = 0
-            let Oi = Os2[i]
-            let si = sharps2[i]
-            var Oni = Os_new[i]
-            for ks in range(len(si)):
-                sharp = si[ks]
-                if Oi[ko] > sharp:
-                    break
-                Oni.append(j)
-                j += 1
-                ko += 1
+            var Oid = 0
+            var j = 0
+            while Oid < len(Os[i]):
+                if Os[i][Oid] < sharp:
+                    print(i, Oid, Os[i][Oid], j, sharp)
+                    Os[i][Oid] = j
+                    Oid += 1
+                    j += 1
+                else:
+                    j = sharp + 1
+                    if sid == len(si):
+                        sharp = size
+                    else:
+                        sharp = si[sid]
+                        sid += 1
 
 
 fn solve1(s: String) raises -> Int:
