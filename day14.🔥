@@ -78,14 +78,12 @@ struct Platform:
         # Move Os to the west
         for i in range(size):
             let si = sharps[i]
-            # var Oi = Os[i]
             var sid = 0
             var sharp = -1
             var Oid = 0
             var j = 0
             while Oid < len(Os[i]):
                 if Os[i][Oid] < sharp:
-                    print(i, Oid, Os[i][Oid], j, sharp)
                     Os[i][Oid] = j
                     Oid += 1
                     j += 1
