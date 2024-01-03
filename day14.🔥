@@ -59,21 +59,26 @@ struct Platform:
                 total -= Osi[j]
         return total
 
+    fn bucket_sort(self, p: Placement, reverse: Bool) -> Placement:
+        let size = self.size
+        var q = init_placement(size)
+        var r4nge = range(0, size, 1)
+        if reverse:
+            r4nge = range(size - 1, -1, -1)
+        for j in r4nge:
+            let pj = p[j]
+            for i in range(len(pj)):
+                q[pj[i]].append(j)
+        return q
+
     fn cycle(inout self) -> NoneType:
         # Tilt the platform to west, south, east, and north
         let size = self.size
 
         # West
         # Sort Os and sharps rowwise first
-        var sharps = init_placement(size)
-        var Os = init_placement(size)
-        for j in range(size):
-            let sj = self.sharps[j]
-            let oj = self.Os[j]
-            for i in range(len(sj)):
-                sharps[sj[i]].append(j)
-            for i in range(len(oj)):
-                Os[oj[i]].append(j)
+        let sharps = self.bucket_sort(self.sharps, False)
+        var Os = self.bucket_sort(self.Os, False)
 
         # Move Os to the west
         for i in range(size):
