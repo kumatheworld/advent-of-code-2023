@@ -75,26 +75,18 @@ struct Platform:
         self.sharps = self._sort_placement(self.sharps, False)
         self.Os = self._sort_placement(self.Os, False)
 
-    fn cycle(inout self) -> NoneType:
-        # Tilt the platform to west, south, east, and north
+    fn tilt(inout self, backward: Bool) -> NoneType:
         let size = self.size
-
-        # West
-        # Sort Os and sharps rowwise first
-        self.sort(False)
         let sharps = self.sharps
-        var Os = self.Os
-
-        # Move Os to the west
         for i in range(size):
             let si = sharps[i]
             var sid = 0
             var sharp = -1
             var Oid = 0
             var j = 0
-            while Oid < len(Os[i]):
-                if Os[i][Oid] < sharp:
-                    Os[i][Oid] = j
+            while Oid < len(self.Os[i]):
+                if self.Os[i][Oid] < sharp:
+                    self.Os[i][Oid] = j
                     Oid += 1
                     j += 1
                 else:
@@ -104,6 +96,14 @@ struct Platform:
                     else:
                         sharp = si[sid]
                         sid += 1
+
+    fn cycle(inout self) -> NoneType:
+        # Tilt the platform to west, south, east, and north
+        let size = self.size
+
+        # West
+        self.sort(False)
+        self.tilt(False)
 
 
 fn solve1(s: String) raises -> Int:
