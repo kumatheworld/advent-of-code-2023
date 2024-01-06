@@ -81,17 +81,29 @@ struct Platform:
         for i in range(size):
             let si = sharps[i]
             var sid = 0
-            var sharp = -1
             var Oid = 0
-            var j = 0
+            let sign: Int
+            var sharp: Int
+            var j: Int
+            if backward:
+                sign = -1
+                sharp = size
+                j = size - 1
+            else:
+                sign = 1
+                sharp = -1
+                j = 0
             while Oid < len(self.Os[i]):
-                if self.Os[i][Oid] < sharp:
+                if (self.Os[i][Oid] > sharp) == backward:
                     self.Os[i][Oid] = j
                     Oid += 1
-                    j += 1
+                    j += sign
                 else:
-                    j = sharp + 1
+                    j = sharp + sign
                     if sid == len(si):
+                        if backward:
+                            sharp = -1
+                        else:
                         sharp = size
                     else:
                         sharp = si[sid]
