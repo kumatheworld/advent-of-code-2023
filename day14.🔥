@@ -22,7 +22,7 @@ struct Platform:
                 break
         self.size = size
 
-        # Tilt the platform to the north and compute the total load
+        # Tilt the platform to the north
         var sharps = init_placement(size)
         var Os = init_placement(size)
 
