@@ -72,8 +72,8 @@ struct Platform:
         return q
 
     fn sort(inout self, reverse: Bool) -> NoneType:
-        self.sharps = self._sort_placement(self.sharps, False)
-        self.Os = self._sort_placement(self.Os, False)
+        self.sharps = self._sort_placement(self.sharps, reverse)
+        self.Os = self._sort_placement(self.Os, reverse)
 
     fn tilt(inout self, backward: Bool) -> NoneType:
         let size = self.size
