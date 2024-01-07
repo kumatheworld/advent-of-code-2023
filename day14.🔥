@@ -8,11 +8,19 @@ fn init_placement(size: Int) -> Placement:
     return p
 
 
+fn get_placement(symbol: StringLiteral, size: Int, s: String) -> Placement:
+    var p = init_placement(size)
+    for i in range(size):
+        for j in range(size):
+            if s[(size + 1) * i + j] == symbol:
+                p[i].append(j)
+    return p
+
+
 struct Platform:
     var size: Int
     var sharps: Placement
     var Os: Placement
-    var num_Os: Int
 
     fn __init__(inout self, s: String) -> NoneType:
         var size = -1
@@ -22,41 +30,16 @@ struct Platform:
                 break
         self.size = size
 
-        # Tilt the platform to the north
-        var sharps = init_placement(size)
-        var Os = init_placement(size)
-
-        var num_Os = 0
-        for j in range(size):
-            var sharp = size
-            var O = 0
-            for i in range(size):
-                let symbol = s[(size + 1) * i + j]
-                if symbol == "O":
-                    O += 1
-                    num_Os += 1
-
-                if symbol == "#" or i == size - 1:
-                    for ii in range(size - sharp, size - sharp + O):
-                        Os[j].append(ii)
-
-                    if symbol == "#":
-                        sharps[j].append(i)
-                        sharp = size - i - 1
-                        O = 0
-
-        self.sharps = sharps
-        self.Os = Os
-        self.num_Os = num_Os
+        self.sharps = get_placement("#", size, s)
+        self.Os = get_placement("O", size, s)
 
     fn total_load(self) -> Int:
-        # Assume that it's tilted to the north
+        # Assume row-major
+        let size = self.size
         let Os = self.Os
-        var total = self.size * self.num_Os
-        for i in range(self.size):
-            let Osi = Os[i]
-            for j in range(len(Osi)):
-                total -= Osi[j]
+        var total = 0
+        for i in range(size):
+            total += len(Os[i]) * (size - i)
         return total
 
     fn _sort_placement(self, p: Placement, reverse: Bool) -> Placement:
@@ -119,7 +102,10 @@ struct Platform:
 
 
 fn solve1(s: String) raises -> Int:
-    let platform = Platform(s)
+    var platform = Platform(s)
+    platform.sort(False)  # row-major -> column-major
+    platform.tilt(False)  # tilt to north
+    platform.sort(False)  # column-major -> row-major
     return platform.total_load()
 
 
