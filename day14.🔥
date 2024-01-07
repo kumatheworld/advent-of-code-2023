@@ -87,18 +87,29 @@ struct Platform:
                         if backward:
                             sharp = -1
                         else:
-                        sharp = size
+                            sharp = size
                     else:
                         sharp = si[sid]
                         sid += 1
 
     fn cycle(inout self) -> NoneType:
-        # Tilt the platform to west, south, east, and north
         let size = self.size
+
+        # North
+        self.sort(False)
+        self.tilt(False)
 
         # West
         self.sort(False)
         self.tilt(False)
+
+        # South
+        self.sort(True)
+        self.tilt(True)
+
+        # East
+        self.sort(True)
+        self.tilt(True)
 
 
 fn solve1(s: String) raises -> Int:
@@ -115,8 +126,19 @@ fn solve2(s: String, reps: Int = 1_000_000_000) raises -> Int:
     var Os_history = DynamicVector[Placement]()
     var total_load_history = DynamicVector[Int]()
     for i in range(reps):
-        platform.cycle()
         let Os = platform.Os
+        var Os_copy = Placement(size)
+        for j in range(size):
+            let Osj = Os[j]
+            var Os_copy_column = DynamicVector[Int]()
+            for i in range(len(Osj)):
+                Os_copy_column.append(Osj[i])
+            Os_copy.append(Os_copy_column)
+        Os_history.append(Os_copy)
+
+        total_load_history.append(platform.total_load())
+
+        platform.cycle()
 
         for j in range(i):
             let Oshj = Os_history[j]
@@ -133,19 +155,8 @@ fn solve2(s: String, reps: Int = 1_000_000_000) raises -> Int:
                     continue
                 break
             else:
-                let idx = i - 1 + (reps - j) % (i - j)
+                let idx = j + (reps - j) % (i - j)
                 return total_load_history[idx]
-
-        var Os_copy = Placement(size)
-        for j in range(size):
-            let Osj = Os[j]
-            var Os_copy_column = DynamicVector[Int]()
-            for i in range(len(Osj)):
-                Os_copy_column.append(Osj[i])
-            Os_copy.append(Os_copy_column)
-        Os_history.append(Os_copy)
-
-        total_load_history.append(platform.total_load())
 
     return total_load_history[len(total_load_history) - 1]  # Should never happen
 
