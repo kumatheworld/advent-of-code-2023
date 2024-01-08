@@ -1,6 +1,5 @@
 from math import min, max
 from python import Python
-from python.object import PythonObject
 
 
 fn minus_ord0(c: String) -> Int:
