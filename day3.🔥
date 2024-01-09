@@ -78,7 +78,7 @@ fn solve2(s: String) raises -> Int:
                         if s[l] == "*":
                             for k in stars:
                                 if k == l:
-                                    stars[k].append(current_number)
+                                    _ = stars[k].append(current_number)
                                     break
             current_number = 0
 
