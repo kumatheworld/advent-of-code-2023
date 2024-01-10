@@ -10,7 +10,7 @@ fn hash(step: String) -> Int:
     return value
 
 
-fn solve(s: String) raises -> Int:
+fn solve1(s: String) raises -> Int:
     let steps = s[:-1].split(",")
     var total = 0
     for i in range(len(steps)):
@@ -18,9 +18,67 @@ fn solve(s: String) raises -> Int:
     return total
 
 
+fn solve2(s: String) raises -> Int:
+    alias num_boxes = 256
+
+    # Tuple[String, Int] doesn't really work as .get[0, String]() fails
+    var boxes = DynamicVector[DynamicVector[String]](num_boxes)
+    for _ in range(num_boxes):
+        boxes.append(DynamicVector[String]())
+
+    let steps = s[:-1].split(",")
+    for i in range(len(steps)):
+        let step = steps[i]
+        print(i, step)
+        let last = len(step) - 1
+        if step[last] == "-":
+            let label = step[:last]
+            let box_id = hash(label)
+            let box = boxes[box_id]
+            for j in range(len(box)):
+                if box[j][:last] == label:
+                    # This is the same as deleting the lens
+                    # Wish DynamicVector could delete an entry
+                    for k in range(j, len(box) - 1):
+                        boxes[box_id][k] = box[k + 1]
+                    _ = boxes[box_id].pop_back()
+        else:
+            let label = step[: last - 1]  # This works as focal length < 10
+            let box_id = hash(label)
+            let box = boxes[box_id]
+            let new_lens = label + step[last]
+            for j in range(len(box)):
+                if box[j][: len(label)] == label:
+                    boxes[box_id][j] = new_lens
+                    break
+            else:
+                # Why do I need the following?
+                # boxes[box_id].clear() didn't work either
+                if len(box) == 0:
+                    boxes[box_id] = DynamicVector[String]()
+                boxes[box_id].append(new_lens)
+
+    var total = 0
+    for i in range(num_boxes):
+        if not len(boxes[i]):
+            continue
+
+        var total_sub = 0
+        for j in range(len(boxes[i])):
+            let box_ij = boxes[i][j]
+            let focal_length_str = box_ij[len(box_ij) - 1]
+            let focal_length = atol(focal_length_str)
+            total_sub += (j + 1) * focal_length
+        total += (i + 1) * total_sub
+
+    return total
+
+
 fn main() raises:
-    print(solve(example))
-    print(solve(text))
+    print(solve1(example))
+    print(solve1(text))
+    print(solve2(example))
+    print(solve2(text))
 
 
 alias example = """rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7
