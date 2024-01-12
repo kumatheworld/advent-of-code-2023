@@ -1,3 +1,6 @@
+from math import max
+
+
 struct Grid:
     var width: Int
     var height: Int
@@ -78,15 +81,30 @@ struct Grid:
         return total
 
 
-fn solve(s: String) -> Int:
+fn solve1(s: String, d: Int = 0, i: Int = 0, j: Int = 0) -> Int:
     var grid = Grid(s)
-    grid.forward(0, 0, 0)
+    grid.forward(d, i, j)
     return grid.count_energized()
 
 
+fn solve2(s: String) -> Int:
+    let grid = Grid(s)  # Do this just for the sake of width and height
+    var largest = 0
+    for i in range(grid.height):
+        largest = max(largest, solve1(s, 0, i, 0))
+        largest = max(largest, solve1(s, 2, i, grid.width - 1))
+    for j in range(grid.width):
+        largest = max(largest, solve1(s, 1, 0, j))
+        largest = max(largest, solve1(s, 3, grid.height - 1, j))
+
+    return largest
+
+
 fn main():
-    print(solve(example))
-    print(solve(text))
+    print(solve1(example))
+    print(solve1(text))
+    print(solve2(example))
+    print(solve2(text))  # Very slow but will run. Parallelization will help.
 
 
 alias example = r""".|...\....
