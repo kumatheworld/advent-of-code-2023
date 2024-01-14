@@ -7,13 +7,12 @@ struct Grid:
     var grid: DynamicVector[DynamicVector[Int]]  # height x width
     var K: Int
     var dist_bound: Int
-    # The 3rd dimension size 4 corresponds to the directions
+    # The 3rd conceivable dimension size 4 corresponds to the directions
     # (right, bottom, left, top) in this order.
-    # dist[i][j][d][k] will be the shortest distance to (i, j), where the last steps
+    # self[(i, j, d, k)] will be the shortest distance to (i, j), where the last steps
     # to the node are k + 1 consecutive arrows of direction d.
-    var dist: DynamicVector[
-        DynamicVector[DynamicVector[DynamicVector[Int]]]
-    ]  # height x width x 4 x K
+    # Numpy would be much better to be real!
+    var dist: DynamicVector[Int]  # height * width * 4 * K
     var di: StaticIntTuple[4]
     var dj: StaticIntTuple[4]
 
@@ -41,32 +40,31 @@ struct Grid:
         self.K = K
         let dist_bound = 10 * self.width * self.height
         self.dist_bound = dist_bound
-        var dist = DynamicVector[DynamicVector[DynamicVector[DynamicVector[Int]]]](
-            height
-        )
-        for _ in range(height):
-            var t3 = DynamicVector[DynamicVector[DynamicVector[Int]]](width)
-            for _ in range(width):
-                var t2 = DynamicVector[DynamicVector[Int]](4)
-                for _ in range(4):
-                    var t1 = DynamicVector[Int](K)
-                    for _ in range(K):
-                        t1.append(dist_bound)
-                    t2.append(t1)
-                t3.append(t2)
-            dist.append(t3)
-            for d in range(4):
-                for k in range(K):
-                    dist[0][0][d][k] = 0
-        self.dist = dist
+        var dist = DynamicVector[Int](height * width * 4 * K)
+        for i in range(height):
+            for j in range(width):
+                for _ in range(4 * K):
+                    if i == 0 and j == 0:
+                        dist.append(0)
+                    else:
+                        dist.append(dist_bound)
 
+        self.dist = dist
         self.di = StaticIntTuple[4](0, 1, 0, -1)
         self.dj = StaticIntTuple[4](1, 0, -1, 0)
+
+    fn _serialize_key(self, key: StaticIntTuple[4]) -> Int:
+        return ((key[0] * self.width + key[1]) * 4 + key[2]) * self.K + key[3]
+
+    fn __getitem__(self, key: StaticIntTuple[4]) -> Int:
+        return self.dist[self._serialize_key(key)]
+
+    fn __setitem__(inout self, key: StaticIntTuple[4], value: Int) -> NoneType:
+        self.dist[self._serialize_key(key)] = value
 
     fn _compute_dist_sub(inout self, d: Int) -> NoneType:
         let width = self.width
         let height = self.height
-        let dist = self.dist
         let K = self.K
         let di = self.di[d]
         let dj = self.dj[d]
@@ -77,17 +75,24 @@ struct Grid:
         for i in ri:
             for j in rj:
                 let weight = self.grid[i][j]
-                let prev = dist[i - di][j - dj]
 
                 var dist_min = self.dist_bound
                 for k in range(K):
-                    dist_min = min(dist_min, prev[(d - 1) % 4][k])
-                    dist_min = min(dist_min, prev[(d + 1) % 4][k])
-                self.dist[i][j][d][0] = dist_min + weight
+                    dist_min = min(
+                        dist_min,
+                        self[StaticIntTuple[4](i - di, j - dj, (d - 1) % 4, k)],
+                    )
+                    dist_min = min(
+                        dist_min,
+                        self[StaticIntTuple[4](i - di, j - dj, (d + 1) % 4, k)],
+                    )
+                self[StaticIntTuple[4](i, j, d, 0)] = dist_min + weight
 
-                let curr = dist[i][j][d]
                 for k in range(1, K):
-                    self.dist[i][j][d][k] = min(curr[k], prev[d][k - 1] + weight)
+                    self[StaticIntTuple[4](i, j, d, k)] = min(
+                        self[StaticIntTuple[4](i, j, d, k)],
+                        self[StaticIntTuple[4](i - di, j - dj, d, k - 1)] + weight,
+                    )
 
     fn compute_dist(inout self) -> NoneType:
         let num_loops = self.width + self.height  # correct? small enough?
@@ -101,11 +106,12 @@ fn solve(s: String) raises -> Int:
     var grid = Grid(s, K)
     grid.compute_dist()
 
-    let dist_bottom_right = grid.dist[grid.height - 1][grid.width - 1]
     var smallest = grid.dist_bound
     for d in range(4):
         for k in range(K):
-            smallest = min(smallest, dist_bottom_right[d][k])
+            smallest = min(
+                smallest, grid[StaticIntTuple[4](grid.height - 1, grid.width - 1, d, k)]
+            )
     return smallest
 
 
