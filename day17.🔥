@@ -7,7 +7,7 @@ struct Grid:
     var grid: DynamicVector[DynamicVector[Int]]  # height x width
     var K: Int
     var dist_bound: Int
-    # The 3rd conceivable dimension size 4 corresponds to the directions
+    # The 3rd flattened dimension size 4 corresponds to the directions
     # (right, bottom, left, top) in this order.
     # self[(i, j, d, k)] will be the shortest distance to (i, j), where the last steps
     # to the node are k + 1 consecutive arrows of direction d.
