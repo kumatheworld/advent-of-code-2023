@@ -5,18 +5,20 @@ struct Grid:
     var width: Int
     var height: Int
     var grid: DynamicVector[DynamicVector[Int]]  # height x width
+    var Kmin: Int
+    var Kmax: Int
     var K: Int
     var dist_bound: Int
     # The 3rd flattened dimension size 4 corresponds to the directions
     # (right, bottom, left, top) in this order.
     # self[(i, j, d, k)] will be the shortest distance to (i, j), where the last steps
-    # to the node are k + 1 consecutive arrows of direction d.
+    # to the node are Kmin + k consecutive arrows of direction d.
     # Numpy would be much better to be real!
-    var dist: DynamicVector[Int]  # height * width * 4 * K
+    var dist: DynamicVector[Int]  # height * width * 4 * (Kmax - Kmin)
     var di: StaticIntTuple[4]
     var dj: StaticIntTuple[4]
 
-    fn __init__(inout self, s: String, K: Int) raises -> NoneType:
+    fn __init__(inout self, s: String, Kmin: Int, Kmax: Int) raises -> NoneType:
         var width: Int  # Could conceivably be let
         for i in range(len(s)):
             if s[i] == "\n":
@@ -37,7 +39,11 @@ struct Grid:
             grid.append(row)
         self.grid = grid
 
+        self.Kmax = Kmax
+        self.Kmin = Kmin
+        let K = Kmax - Kmin + 1
         self.K = K
+
         let dist_bound = 10 * self.width * self.height
         self.dist_bound = dist_bound
         var dist = DynamicVector[Int](height * width * 4 * K)
@@ -65,34 +71,48 @@ struct Grid:
     fn _compute_dist_sub(inout self, d: Int) -> NoneType:
         let width = self.width
         let height = self.height
+        let Kmin = self.Kmin
+        let Kmax = self.Kmax
         let K = self.K
-        let di = self.di[d]
-        let dj = self.dj[d]
-        # Can't typehint range! Wish the below could be included in __init__
-        let ri = range(max(0, di), height + min(0, di))
-        let rj = range(max(0, dj), width + min(0, dj))
 
-        for i in ri:
-            for j in rj:
-                let weight = self.grid[i][j]
+        for k in range(K):
+            let di = self.di[d] * (Kmin + k)
+            let dj = self.dj[d] * (Kmin + k)
+            # Can't typehint range! Wish the below could be included in __init__
+            let ri = range(max(0, di), height + min(0, di))
+            let rj = range(max(0, dj), width + min(0, dj))
 
-                var dist_min = self.dist_bound
-                for k in range(K):
-                    dist_min = min(
-                        dist_min,
-                        self[StaticIntTuple[4](i - di, j - dj, (d - 1) % 4, k)],
-                    )
-                    dist_min = min(
-                        dist_min,
-                        self[StaticIntTuple[4](i - di, j - dj, (d + 1) % 4, k)],
-                    )
-                self[StaticIntTuple[4](i, j, d, 0)] = dist_min + weight
+            for i in ri:
+                for j in rj:
+                    let ii = i - di
+                    let jj = j - dj
 
-                for k in range(1, K):
-                    self[StaticIntTuple[4](i, j, d, k)] = min(
-                        self[StaticIntTuple[4](i, j, d, k)],
-                        self[StaticIntTuple[4](i - di, j - dj, d, k - 1)] + weight,
-                    )
+                    # Should be precomputed
+                    var weight = 0
+                    if di:
+                        var riii = range(i, ii, -1)
+                        if di < 0:
+                            riii = range(i, ii, 1)
+                        for iii in riii:
+                            weight += self.grid[iii][j]
+                    else:
+                        var rjjj = range(j, jj, -1)
+                        if dj < 0:
+                            rjjj = range(j, jj, 1)
+                        for jjj in rjjj:
+                            weight += self.grid[i][jjj]
+
+                    var dist_min = self.dist_bound
+                    for kk in range(K):
+                        dist_min = min(
+                            dist_min,
+                            self[StaticIntTuple[4](ii, jj, (d - 1) % 4, kk)],
+                        )
+                        dist_min = min(
+                            dist_min,
+                            self[StaticIntTuple[4](ii, jj, (d + 1) % 4, kk)],
+                        )
+                    self[StaticIntTuple[4](i, j, d, k)] = dist_min + weight
 
     fn compute_dist(inout self) -> NoneType:
         let num_loops = self.width + self.height  # correct? small enough?
@@ -101,14 +121,13 @@ struct Grid:
                 self._compute_dist_sub(d)
 
 
-fn solve(s: String) raises -> Int:
-    alias K = 3
-    var grid = Grid(s, K)
+fn solve(s: String, Kmin: Int, Kmax: Int) raises -> Int:
+    var grid = Grid(s, Kmin, Kmax)
     grid.compute_dist()
 
     var smallest = grid.dist_bound
     for d in range(4):
-        for k in range(K):
+        for k in range(grid.K):
             smallest = min(
                 smallest, grid[StaticIntTuple[4](grid.height - 1, grid.width - 1, d, k)]
             )
@@ -116,11 +135,14 @@ fn solve(s: String) raises -> Int:
 
 
 fn main() raises:
-    print(solve(example))
-    print(solve(text))
+    print(solve(example1, 1, 3))
+    print(solve(text, 1, 3))
+    print(solve(example1, 4, 10))
+    print(solve(example2, 4, 10))
+    print(solve(text, 4, 10))  # Very slow but will run
 
 
-alias example = """2413432311323
+alias example1 = """2413432311323
 3215453535623
 3255245654254
 3446585845452
@@ -133,6 +155,13 @@ alias example = """2413432311323
 1224686865563
 2546548887735
 4322674655533
+"""
+
+alias example2 = """111111111111
+999999999991
+999999999991
+999999999991
+999999999991
 """
 
 alias text = """213132332242244333314552211545514241212233422661112133361246131263251423221122555246536242354216434511222434442322532244312121132113144331132
