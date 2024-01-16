@@ -30,25 +30,25 @@ fn solve(s: String) raises -> Int:
         let d = direction(line[0])
         let l = atol(line[1])
         if d % 2:
-            let sign = 2 - d
-            let jj = j + sign * l
-            for jjj in range(j, jj, sign):
-                edge.append((i, jjj))
-            j = jj
-            if sign > 0:
-                bottom = max(bottom, j)
-            else:
-                top = min(top, j)
-        else:
-            let sign = 1 - d
+            let sign = di[d]
             let ii = i + sign * l
             for iii in range(i, ii, sign):
                 edge.append((iii, j))
             i = ii
             if sign > 0:
-                right = max(right, i)
+                bottom = max(bottom, i)
             else:
-                left = min(left, i)
+                top = min(top, i)
+        else:
+            let sign = dj[d]
+            let jj = j + sign * l
+            for jjj in range(j, jj, sign):
+                edge.append((i, jjj))
+            j = jj
+            if sign > 0:
+                right = max(right, j)
+            else:
+                left = min(left, j)
 
     for k in range(len(edge)):
         let i = edge[k].get[0, Int]() - top
