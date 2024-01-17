@@ -76,14 +76,12 @@ fn solve1(s: String) -> Int:
 
 fn solve2(s: String) -> Int:
     let ls = Landscape(s)
-    let id_S = ls.id_S
     let circuit = compute_circuit(s)
     let circuit_end = circuit[len(circuit) - 1]
 
     var total = 0
     for i in range(ls.height):
         for j in range(ls.width - 1):
-            let symbol = ls[StaticIntTuple[2](i, j)]
             var angle_sum = Float64(0)
             var ui = circuit_end.get[0, Int]() - i
             var uj = circuit_end.get[1, Int]() - j
