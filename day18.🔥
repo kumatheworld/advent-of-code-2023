@@ -1,4 +1,5 @@
 from math import max, min
+from day10 import compute_inner_area
 
 
 fn direction(s: String) -> Int:
@@ -50,17 +51,23 @@ fn solve(s: String) raises -> Int:
             else:
                 left = min(left, j)
 
+    let width = right - left + 1
+    let height = bottom - top + 1
+
     for k in range(len(edge)):
         let i = edge[k].get[0, Int]() - top
         let j = edge[k].get[1, Int]() - left
         edge[k] = (i, j)
 
-    return 0
+    let inner_area = compute_inner_area(edge, width, height)
+    let closure_area = len(edge) + inner_area
+
+    return closure_area
 
 
 fn main() raises:
     print(solve(example))
-    print(solve(text))
+    print(solve(text))  # A little bit slow but runs
 
 
 alias example = """R 6 (#70c710)
