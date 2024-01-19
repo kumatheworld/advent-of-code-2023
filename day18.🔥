@@ -2,19 +2,26 @@ from math import max, min
 from day10 import compute_inner_area
 
 
-fn direction(s: String) -> Int:
-    if s == "R":
-        return 0
-    if s == "D":
-        return 1
-    if s == "L":
-        return 2
-    if s == "U":
-        return 3
-    return -1  # Should never happen
+fn process_line1(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
+    let direction: Int
+    if line[0] == "R":
+        direction = 0
+    elif line[0] == "D":
+        direction = 1
+    elif line[0] == "L":
+        direction = 2
+    elif line[0] == "U":
+        direction = 3
+    else:  # Should never happen
+        direction = -1
+
+    let length = atol(line[1])
+    return StaticIntTuple[2](direction, length)
 
 
-fn solve(s: String) raises -> Int:
+fn solve(
+    s: String, process_line: fn (DynamicVector[String]) raises -> StaticIntTuple[2]
+) raises -> Int:
     alias di = StaticIntTuple[4](0, 1, 0, -1)
     alias dj = StaticIntTuple[4](1, 0, -1, 0)
 
@@ -28,8 +35,9 @@ fn solve(s: String) raises -> Int:
     let lines = s.split("\n")
     for k in range(len(lines) - 1):
         let line = lines[k].split(" ")
-        let d = direction(line[0])
-        let l = atol(line[1])
+        let dl = process_line(line)  # Wish tuple unpacking could be used
+        let d = dl[0]
+        let l = dl[1]
         if d % 2:
             let sign = di[d]
             let ii = i + sign * l
@@ -66,8 +74,8 @@ fn solve(s: String) raises -> Int:
 
 
 fn main() raises:
-    print(solve(example))
-    print(solve(text))  # A little bit slow but runs
+    print(solve(example, process_line1))
+    print(solve(text, process_line1))  # A little bit slow but runs
 
 
 alias example = """R 6 (#70c710)
