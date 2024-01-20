@@ -19,6 +19,22 @@ fn process_line1(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
     return StaticIntTuple[2](direction, length)
 
 
+fn process_line2(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
+    let direction = atol(line[2][7])
+    var length = 0
+    for i in range(2, 7):
+        let ord_digit = ord(line[2][i])
+        var digitoid = ord_digit - ord(0)
+        if digitoid > 9:
+            digitoid = ord_digit - ord("a") + 10
+
+        length *= 16
+        length += digitoid
+
+    print(line[2], direction, length)
+    return StaticIntTuple[2](direction, length)
+
+
 fn solve(
     s: String, process_line: fn (DynamicVector[String]) raises -> StaticIntTuple[2]
 ) raises -> Int:
@@ -76,6 +92,8 @@ fn solve(
 fn main() raises:
     print(solve(example, process_line1))
     print(solve(text, process_line1))  # A little bit slow but runs
+    print(solve(example, process_line2))
+    print(solve(text, process_line2))
 
 
 alias example = """R 6 (#70c710)
