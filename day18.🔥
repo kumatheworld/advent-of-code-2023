@@ -1,6 +1,8 @@
 from math import max, min
 from day10 import compute_inner_area
 
+from algorithm.sort import sort
+
 
 fn process_line1(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
     let direction: Int
@@ -33,6 +35,21 @@ fn process_line2(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
 
     print(line[2], direction, length)
     return StaticIntTuple[2](direction, length)
+
+
+fn sort_uniq(a: DynamicVector[Int]) -> DynamicVector[Int]:
+    var b = a
+    sort(b)
+
+    var c = DynamicVector[Int]()
+    var last = -1
+    for k in range(len(b)):
+        if last == b[k]:
+            continue
+        last = b[k]
+        c.append(last)
+
+    return c
 
 
 fn solve(
