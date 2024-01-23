@@ -85,8 +85,6 @@ fn compute_inner_area(
             var angle_sum = Float64(0)
             var ui = circuit_end.get[0, Int]() - i
             var uj = circuit_end.get[1, Int]() - j
-            if ui == 0 and uj == 0:  # (i, j) happens to be circuit_end
-                continue
 
             for k in range(len(circuit)):
                 let vi = circuit[k].get[0, Int]() - i
