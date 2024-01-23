@@ -74,43 +74,47 @@ fn solve1(s: String) -> Int:
     return len(compute_circuit(ls)) // 2
 
 
+fn is_inside(circuit: DynamicVector[Tuple[Int, Int]], i: Int, j: Int) -> Bool:
+    var angle_sum = Float64(0)
+    # The following shouldn't be repeated. Maybe you want a class or a closure
+    let circuit_end = circuit[len(circuit) - 1]
+    var ui = circuit_end.get[0, Int]() - i
+    var uj = circuit_end.get[1, Int]() - j
+
+    for k in range(len(circuit)):
+        let vi = circuit[k].get[0, Int]() - i
+        let vj = circuit[k].get[1, Int]() - j
+        if vi == 0 and vj == 0:  # circuit happens to contain (i, j)
+            return False
+
+        let norm_u = math.hypot[DType.float64, 1](ui, uj)
+        let norm_v = math.hypot[DType.float64, 1](vi, vj)
+        let norm_uv = norm_u * norm_v
+        let inner_prod = ui * vi + uj * vj
+        let angle_pos = math.acos(inner_prod / norm_uv)
+
+        let determinant = ui * vj - uj * vi
+        if determinant > 0:
+            angle_sum += angle_pos
+        else:
+            angle_sum -= angle_pos
+
+        ui = vi
+        uj = vj
+    else:
+        # Now angle_sum should be either -2*pi, 0, or 2*pi
+        # The point is outside iff angle_sum is 0
+        return math.abs(angle_sum) > 3
+
+
 fn compute_inner_area(
     circuit: DynamicVector[Tuple[Int, Int]], width: Int, height: Int
 ) -> Int:
-    let circuit_end = circuit[len(circuit) - 1]
-
     var total = 0
     for i in range(height):
         for j in range(width - 1):
-            var angle_sum = Float64(0)
-            var ui = circuit_end.get[0, Int]() - i
-            var uj = circuit_end.get[1, Int]() - j
-
-            for k in range(len(circuit)):
-                let vi = circuit[k].get[0, Int]() - i
-                let vj = circuit[k].get[1, Int]() - j
-                if vi == 0 and vj == 0:  # circuit happens to contain (i, j)
-                    break
-
-                let norm_u = math.hypot[DType.float64, 1](ui, uj)
-                let norm_v = math.hypot[DType.float64, 1](vi, vj)
-                let norm_uv = norm_u * norm_v
-                let inner_prod = ui * vi + uj * vj
-                let angle_pos = math.acos(inner_prod / norm_uv)
-
-                let determinant = ui * vj - uj * vi
-                if determinant > 0:
-                    angle_sum += angle_pos
-                else:
-                    angle_sum -= angle_pos
-
-                ui = vi
-                uj = vj
-            else:
-                # Now angle_sum should be either -2*pi, 0, or 2*pi
-                # The point is outside iff angle_sum is 0
-                if math.abs(angle_sum) > 3:
-                    total += 1
+            if is_inside(circuit, i, j):
+                total += 1
     return total
 
 
