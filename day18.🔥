@@ -1,5 +1,5 @@
 from math import max, min
-from day10 import compute_inner_area
+from day10 import is_inside
 
 from algorithm.sort import sort
 
@@ -80,65 +80,72 @@ fn indexify(inout a: DynamicVector[Int]) -> DynamicVector[Int]:
     return d
 
 
+fn step(a: Int, b: Int) -> Int:
+    if a < b:
+        return 1
+    return -1
+
+
 fn solve(
     s: String, process_line: fn (DynamicVector[String]) raises -> StaticIntTuple[2]
 ) raises -> Int:
     alias di = StaticIntTuple[4](0, 1, 0, -1)
     alias dj = StaticIntTuple[4](1, 0, -1, 0)
 
-    var left = 0
-    var top = 0
-    var right = 0
-    var bottom = 0
-    var i = 0
-    var j = 0
-    var edge = DynamicVector[Tuple[Int, Int]]()
+    var xs = DynamicVector[Int]()
+    var ys = DynamicVector[Int]()
+    var x = 0
+    var y = 0
     let lines = s.split("\n")
     for k in range(len(lines) - 1):
         let line = lines[k].split(" ")
         let dl = process_line(line)  # Wish tuple unpacking could be used
         let d = dl[0]
         let l = dl[1]
-        if d % 2:
+        if k % 2:  # Same as d % 2
+            ys.append(y)
             let sign = di[d]
-            let ii = i + sign * l
-            for iii in range(i, ii, sign):
-                edge.append((iii, j))
-            i = ii
-            if sign > 0:
-                bottom = max(bottom, i)
-            else:
-                top = min(top, i)
+            y += sign * l
         else:
+            xs.append(x)
             let sign = dj[d]
-            let jj = j + sign * l
-            for jjj in range(j, jj, sign):
-                edge.append((i, jjj))
-            j = jj
-            if sign > 0:
-                right = max(right, j)
-            else:
-                left = min(left, j)
+            x += sign * l
 
-    let width = right - left + 1
-    let height = bottom - top + 1
+    let dx = indexify(xs)
+    let dy = indexify(ys)
 
+    x = xs[len(xs) - 1]
+    y = ys[len(xs) - 1]
+    var edge = DynamicVector[Tuple[Int, Int]]()
+    for k in range(len(xs)):
+        for xx in range(x, xs[k], step(x, xs[k])):
+            edge.append((xx, y))
+        x = xs[k]
+
+        for yy in range(y, ys[k], step(y, ys[k])):
+            edge.append((x, yy))
+        y = ys[k]
+
+    var total = 0
+
+    # On edge
     for k in range(len(edge)):
-        let i = edge[k].get[0, Int]() - top
-        let j = edge[k].get[1, Int]() - left
-        edge[k] = (i, j)
+        total += dx[edge[k].get[0, Int]()] * dy[edge[k].get[1, Int]()]
 
-    let inner_area = compute_inner_area(edge, width, height)
-    let closure_area = len(edge) + inner_area
+    # Inside
+    for i in range(len(dy)):
+        for j in range(len(dx)):
+            if is_inside(edge, j, i):
+                total += dx[j] * dy[i]
 
-    return closure_area
+    return total
 
 
 fn main() raises:
     print(solve(example, process_line1))
     print(solve(text, process_line1))  # A little bit slow but runs
-    print(solve(example, process_line2))
-    print(solve(text, process_line2))
+    print(solve(example, process_line2))  # A little bit slow but runs
+    print(solve(text, process_line2))  # Slow but runs
 
 
 alias example = """R 6 (#70c710)
