@@ -33,7 +33,6 @@ fn process_line2(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
         length *= 16
         length += digitoid
 
-    print(line[2], direction, length)
     return StaticIntTuple[2](direction, length)
 
 
