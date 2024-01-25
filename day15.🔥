@@ -1,4 +1,4 @@
-fn hash(step: String) -> Int:
+fn h4sh(step: String) -> Int:
     alias multiplier = 17
     alias divider = 256
     var value = 0
@@ -14,7 +14,7 @@ fn solve1(s: String) raises -> Int:
     let steps = s[:-1].split(",")
     var total = 0
     for i in range(len(steps)):
-        total += hash(steps[i])
+        total += h4sh(steps[i])
     return total
 
 
@@ -33,7 +33,7 @@ fn solve2(s: String) raises -> Int:
         let last = len(step) - 1
         if step[last] == "-":
             let label = step[:last]
-            let box_id = hash(label)
+            let box_id = h4sh(label)
             let box = boxes[box_id]
             for j in range(len(box)):
                 if box[j][:last] == label:
@@ -44,7 +44,7 @@ fn solve2(s: String) raises -> Int:
                     _ = boxes[box_id].pop_back()
         else:
             let label = step[: last - 1]  # This works as focal length < 10
-            let box_id = hash(label)
+            let box_id = h4sh(label)
             let box = boxes[box_id]
             let new_lens = label + step[last]
             for j in range(len(box)):
