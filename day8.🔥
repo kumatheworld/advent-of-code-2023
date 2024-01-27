@@ -1,10 +1,7 @@
-# Stopped working in v0.7.0 as UnsafeFixedVector was removed
-# Now I'd just use Dict instead
-from collections.vector import UnsafeFixedVector
 import math
 
 # Wish InlineFixedVector could be used, but 26**3 would be way too large
-alias Network = UnsafeFixedVector[StaticIntTuple[2]]
+alias Network = DynamicVector[Tuple[Int, Int]]
 
 
 fn hash_cap3(s: String) -> Int:
@@ -29,13 +26,11 @@ fn parse_directions(lines: DynamicVector[String]) -> DynamicVector[Int]:
 fn parse_network(lines: DynamicVector[String]) -> Network:
     var network = Network(26**3)
     for i in range(26**3):
-        network.append(StaticIntTuple[2](-1, -1))
+        network.append((-1, -1))
 
     for i in range(2, len(lines) - 1):
         let line = lines[i]
-        network[hash_cap3(line[:3])] = StaticIntTuple[2](
-            hash_cap3(line[7:10]), hash_cap3(line[12:15])
-        )
+        network[hash_cap3(line[:3])] = (hash_cap3(line[7:10]), hash_cap3(line[12:15]))
 
     return network
 
@@ -48,7 +43,10 @@ fn solve1(s: String) raises -> Int:
     var idx = hash_cap3("AAA")
     for i in range(26**3):
         for j in range(len(directions)):
-            idx = network[idx][directions[j]]
+            if directions[j]:  # network[idx].get[directions[j], Int]() doesn't work
+                idx = network[idx].get[1, Int]()
+            else:
+                idx = network[idx].get[0, Int]()
             if idx == hash_cap3("ZZZ"):
                 return i * len(directions) + j + 1
 
@@ -76,7 +74,10 @@ fn solve2(s: String) raises -> Int:
         var idx = initial_node
         for i in range(26**3):
             for j in range(len(directions)):
-                idx = network[idx][directions[j]]
+                if directions[j]:  # network[idx].get[directions[j], Int]() doesn't work
+                    idx = network[idx].get[1, Int]()
+                else:
+                    idx = network[idx].get[0, Int]()
                 for h in range(len(terminal_nodes)):  # Wish in could be used
                     if idx == terminal_nodes[h]:
                         let steps = i * len(directions) + j + 1
