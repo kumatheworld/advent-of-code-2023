@@ -32,11 +32,9 @@ fn ind3x(label: String, labels: DynamicVector[String]) -> Int:
     return idx
 
 
-fn solve(s: String) raises -> Int:
-    let wr = s.split("\n\n")
-    let wf_str = wr[0].split("\n")
-    let rt_str = wr[1].split("\n")  # contains last empty string
-
+fn compile_workflows(
+    wf_str: DynamicVector[String], inout workflows: DynamicVector[Workflow]
+) raises -> Int:
     # Number labels
     var labels = DynamicVector[String]()
     var idx_in = -1
@@ -47,7 +45,6 @@ fn solve(s: String) raises -> Int:
         labels.append(label)
 
     # Compile workflows
-    var workflows = DynamicVector[Workflow]()
     for i in range(len(wf_str)):
         let items = wf_str[i].split("{")[1].split(",")
         var workflow = Workflow()
@@ -68,6 +65,17 @@ fn solve(s: String) raises -> Int:
         workflow.append((-1, False, 0, dest))
 
         workflows.append(workflow)
+
+    return idx_in
+
+
+fn solve(s: String) raises -> Int:
+    let wr = s.split("\n\n")
+    let wf_str = wr[0].split("\n")
+    let rt_str = wr[1].split("\n")  # contains last empty string
+
+    var workflows = DynamicVector[Workflow]()
+    let idx_in = compile_workflows(wf_str, workflows)
 
     # Track each line
     var total = 0
