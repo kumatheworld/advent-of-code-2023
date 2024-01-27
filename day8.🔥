@@ -1,3 +1,5 @@
+# Stopped working in v0.7.0 as UnsafeFixedVector was removed
+# Now I'd just use Dict instead
 from collections.vector import UnsafeFixedVector
 import math
 
