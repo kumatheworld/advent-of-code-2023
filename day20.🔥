@@ -1,0 +1,231 @@
+from collections.optional import Optional
+
+from collections.dict import Dict, KeyElement
+
+alias Pulse2 = Tuple[Int, Bool]  # source, high
+alias Pulse3 = Tuple[Int, Bool, Int]  # source, high, target
+
+
+@value
+struct StringKey(KeyElement):
+    var s: String
+
+    fn __init__(inout self, owned s: String):
+        self.s = s ^
+
+    fn __init__(inout self, s: StringLiteral):
+        self.s = String(s)
+
+    fn __hash__(self) -> Int:
+        let ptr = self.s._buffer.data.value
+        return hash(DTypePointer[DType.int8](ptr), len(self.s))
+
+    fn __eq__(self, other: Self) -> Bool:
+        return self.s == other.s
+
+
+@value
+struct Module(CollectionElement):
+    var on: Bool  # Only applicable to a flip-flop
+    var prev: DynamicVector[Pulse2]  # Only applicable to a conjunction
+    var n3xt: DynamicVector[Int]
+
+    fn __init__(inout self, is_conj: Bool, n3xt: DynamicVector[Int]) -> NoneType:
+        self.on = is_conj
+        self.prev = DynamicVector[Pulse2]()
+        self.n3xt = n3xt
+
+    fn forward(inout self, pulse: Pulse2) -> Optional[Bool]:
+        let high = pulse.get[1, Bool]()
+        var prev = self.prev
+        if len(prev):  # Conjunction
+            let source = pulse.get[0, Int]()
+            var all_high = True
+            for i in range(len(prev)):
+                let sp = prev[i].get[0, Int]()
+                let hp = prev[i].get[1, Bool]()
+                if sp == source:
+                    self.prev[i] = pulse
+                    all_high = all_high and high
+                else:
+                    all_high = all_high and hp
+            return not all_high
+        else:  # Flip-flop
+            if high:
+                return None
+            self.on = not self.on
+            return self.on
+
+
+# Wish this could be inside parse() as a closure, but an error still occurs in v0.7.0
+fn compute_targets(
+    targets_str: String, labels: Dict[StringKey, Int]
+) raises -> DynamicVector[Int]:
+    let ss = targets_str.split(", ")
+    var targets = DynamicVector[Int](len(ss))
+    for j in range(len(ss)):
+        var label = -1
+        try:
+            label = labels[StringKey(ss[j])]
+        except KeyError:  # Untyped
+            pass
+        targets.append(label)
+    return targets
+
+
+fn parse(
+    s: String,
+    inout broadcast: DynamicVector[Pulse3],
+    inout modules: DynamicVector[Module],
+) raises -> NoneType:
+    let lines = s.split("\n")
+    var labels = Dict[StringKey, Int]()
+
+    var idx = 0
+    for i in range(len(lines) - 1):
+        let source = lines[i].split(" ")[0]
+        if source == "broadcaster":
+            continue
+        labels[StringKey(source[1:])] = idx
+        idx += 1
+
+    for i in range(len(lines) - 1):
+        let st = lines[i].split(" -> ")
+        let source = st[0]
+        let targets = compute_targets(st[1], labels)
+        if source == "broadcaster":
+            for j in range(len(targets)):
+                broadcast.append((-1, False, targets[j]))
+        else:
+            let module = Module(source[0] == "&", targets)
+            modules.append(module)
+
+    idx = 0
+    for i in range(len(lines) - 1):
+        let st = lines[i].split(" -> ")
+        let source = st[0]
+        if source == "broadcaster":
+            continue
+        let targets = compute_targets(st[1], labels)
+        for j in range(len(targets)):
+            let target = targets[j]
+            if target == -1:  # Untyped
+                continue
+            if modules[targets[j]].on:  # A little hacky; it's on iff it's a conjunction
+                modules[targets[j]].prev.append((idx, False))
+        idx += 1
+
+
+fn solve(s: String, reps: Int = 1000) raises -> Int:
+    var broadcast = DynamicVector[Pulse3]()
+    var modules = DynamicVector[Module]()
+    parse(s, broadcast, modules)
+
+    var lows = 0
+    var highs = 0
+    for _ in range(reps):  # Could be more efficient but meh
+        var q1 = broadcast
+        var q2 = DynamicVector[Pulse3]()
+        lows += 1
+        while len(q1):
+            for i in range(len(q1)):
+                let high = q1[i].get[1, Bool]()
+                if high:
+                    highs += 1
+                else:
+                    lows += 1
+
+                let target = q1[i].get[2, Int]()
+                if target == -1:  # Untyped
+                    continue
+
+                let source = q1[i].get[0, Int]()
+                let result = modules[target].forward((source, high))
+                if result:
+                    let n3xt = modules[target].n3xt
+                    for j in range(len(n3xt)):
+                        q2.append((target, result.value(), n3xt[j]))
+            q1 = q2
+            q2.clear()
+
+    return lows * highs
+
+
+fn main() raises:
+    print(solve(example1))
+    print(solve(example2))
+    print(solve(text))
+
+
+alias example1 = r"""broadcaster -> a, b, c
+%a -> b
+%b -> c
+%c -> inv
+&inv -> a
+"""
+alias example2 = r"""broadcaster -> a
+%a -> inv, con
+&inv -> b
+%b -> con
+&con -> output
+"""
+
+alias text = r"""&ls -> fg, ck, fv, sk, fl, hz
+%px -> ls, dv
+%jk -> xt, tx
+%hd -> fs, vn
+%pk -> ql
+%bj -> tx, pr
+%vg -> xl, sf
+%cj -> bj
+%sk -> bz
+%fl -> fx
+%th -> fl, ls
+%pr -> gm
+%xv -> sf, hp
+%mh -> jb
+%jh -> kx, tx
+%jz -> pm, fs
+%hr -> tx, gk
+%kx -> cj
+%ql -> jx
+%gm -> tx, jt
+%hz -> ls, fv
+%dt -> fs
+%gg -> sf, vg
+%xl -> fh
+&pq -> vr
+%jx -> mv
+%kr -> gg
+%bn -> px, ls
+&fs -> pm, rg, pq, pj, nk, mh, jb
+%vn -> rt, fs
+%jt -> tx, zb
+broadcaster -> hz, hr, nk, nv
+%fx -> sk, ls
+%rt -> fs, kz
+%gk -> tx, jh
+%mv -> sf, kr
+%bz -> bn, ls
+%dv -> ls
+%rg -> jz
+%pj -> mh
+%kz -> dt, fs
+%ck -> hg
+&fg -> vr
+&sf -> pk, jx, nv, kr, xl, ql, dk
+%jb -> rg
+%nk -> fs, pj
+&dk -> vr
+%hp -> sf
+&tx -> hr, fm, kx, cj, pr
+%nv -> pk, sf
+%fh -> xv, sf
+%xt -> tx
+%hg -> ls, th
+%zb -> tx, jk
+&fm -> vr
+%pm -> hd
+%fv -> ck
+&vr -> rx
+"""
