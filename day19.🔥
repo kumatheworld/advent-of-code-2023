@@ -69,7 +69,7 @@ fn compile_workflows(
     return idx_in
 
 
-fn solve(s: String) raises -> Int:
+fn solve1(s: String) raises -> Int:
     let wr = s.split("\n\n")
     let wf_str = wr[0].split("\n")
     let rt_str = wr[1].split("\n")  # contains last empty string
@@ -106,9 +106,112 @@ fn solve(s: String) raises -> Int:
     return total
 
 
+@value
+struct Intervals(CollectionElement):
+    var itvs: DynamicVector[Tuple[Int, Int]]
+
+    fn __init__(inout self) -> NoneType:
+        self.itvs = DynamicVector[Tuple[Int, Int]]()
+
+    fn __init__(inout self, m1n: Int, m4x: Int) -> NoneType:
+        var itvs = DynamicVector[Tuple[Int, Int]]()
+        itvs.append((m1n, m4x + 1))
+        self.itvs = itvs
+
+    fn __len__(self) -> Int:
+        # Wish list comprehension or sum() could be used
+        var total = 0
+        let itvs = self.itvs
+        for i in range(len(itvs)):
+            total += itvs[i].get[1, Int]() - itvs[i].get[0, Int]()
+        return total
+
+    fn split(
+        self, value: Int, exclusive: Bool, inout less: Intervals, inout great: Intervals
+    ) -> NoneType:
+        let itvs = self.itvs
+        let c: Int
+        if exclusive:  # Wish the ternary operator could be used
+            c = value
+        else:
+            c = value + 1
+
+        var idx = 0
+        while True:
+            let ii = itvs[idx]
+            let a = ii.get[0, Int]()
+            if c < a:
+                break
+
+            let b = ii.get[1, Int]()
+            idx += 1
+            if c < b:
+                less.itvs.append((a, c))
+                great.itvs.append((c, b))
+                break
+
+            less.itvs.append(ii)
+
+        for i in range(idx, len(itvs)):
+            great.itvs.append(itvs[i])
+
+
+fn compute_total(
+    idx: Int, inout xmas: DynamicVector[Intervals], workflows: DynamicVector[Workflow]
+) -> Int:
+    if idx == len(workflows):  # R
+        return 0
+
+    if idx == len(workflows) + 1:  # A
+        var total = 1
+        for k in range(len(xmas)):
+            total *= xmas[k].__len__()
+        return total
+
+    let wf = workflows[idx]
+    var total = 0
+    for j in range(len(wf) - 1):
+        let vh = wf[j].get[0, Int]()
+        let lt = wf[j].get[1, Bool]()
+        let val = wf[j].get[2, Int]()
+        let dest = wf[j].get[3, Int]()
+        var less = Intervals()
+        var great = Intervals()
+
+        var xmas_left = xmas
+        xmas[vh].split(val, lt, less, great)
+        if lt:
+            xmas_left[vh] = less
+            xmas[vh] = great
+        else:
+            xmas_left[vh] = great
+            xmas[vh] = less
+        total += compute_total(dest, xmas_left, workflows)
+    total += compute_total(wf[len(wf) - 1].get[3, Int](), xmas, workflows)
+
+    return total
+
+
+fn solve2(s: String) raises -> Int:
+    let wr = s.split("\n\n")
+    let wf_str = wr[0].split("\n")
+
+    var workflows = DynamicVector[Workflow]()
+    let idx_in = compile_workflows(wf_str, workflows)
+
+    var xmas = DynamicVector[Intervals](4)
+    for _ in range(4):
+        xmas.append(Intervals(1, 4000))
+
+    let total = compute_total(idx_in, xmas, workflows)
+    return total
+
+
 fn main() raises:
-    print(solve(example))
-    print(solve(text))
+    print(solve1(example))
+    print(solve1(text))
+    print(solve2(example))
+    print(solve2(text))
 
 
 alias example = """px{a<2006:qkq,m>2090:A,rfg}
