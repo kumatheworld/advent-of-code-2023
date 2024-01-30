@@ -116,7 +116,42 @@ fn parse(
         idx += 1
 
 
-fn solve(s: String, reps: Int = 1000) raises -> Int:
+fn count_pulses(
+    broadcast: DynamicVector[Pulse3],
+    inout modules: DynamicVector[Module],
+    inout lows: Int,
+    inout highs: Int,
+) -> Bool:
+    var q1 = broadcast
+    var q2 = DynamicVector[Pulse3]()
+    lows += 1
+    var low_final_delivered = False
+    while len(q1):
+        for i in range(len(q1)):
+            let high = q1[i].get[1, Bool]()
+            if high:
+                highs += 1
+            else:
+                lows += 1
+
+            let target = q1[i].get[2, Int]()
+            if target == -1:  # Final
+                low_final_delivered = low_final_delivered or not high
+                continue
+
+            let source = q1[i].get[0, Int]()
+            let result = modules[target].forward((source, high))
+            if result:
+                let n3xt = modules[target].n3xt
+                for j in range(len(n3xt)):
+                    q2.append((target, result.value(), n3xt[j]))
+        q1 = q2
+        q2.clear()
+
+    return low_final_delivered
+
+
+fn solve1(s: String, reps: Int = 1000) raises -> Int:
     var broadcast = DynamicVector[Pulse3]()
     var modules = DynamicVector[Module]()
     parse(s, broadcast, modules)
@@ -124,37 +159,30 @@ fn solve(s: String, reps: Int = 1000) raises -> Int:
     var lows = 0
     var highs = 0
     for _ in range(reps):  # Could be more efficient but meh
-        var q1 = broadcast
-        var q2 = DynamicVector[Pulse3]()
-        lows += 1
-        while len(q1):
-            for i in range(len(q1)):
-                let high = q1[i].get[1, Bool]()
-                if high:
-                    highs += 1
-                else:
-                    lows += 1
-
-                let target = q1[i].get[2, Int]()
-                if target == -1:  # Untyped
-                    continue
-
-                let source = q1[i].get[0, Int]()
-                let result = modules[target].forward((source, high))
-                if result:
-                    let n3xt = modules[target].n3xt
-                    for j in range(len(n3xt)):
-                        q2.append((target, result.value(), n3xt[j]))
-            q1 = q2
-            q2.clear()
+        _ = count_pulses(broadcast, modules, lows, highs)
 
     return lows * highs
 
 
+fn solve2(s: String) raises -> Int:
+    var broadcast = DynamicVector[Pulse3]()
+    var modules = DynamicVector[Module]()
+    parse(s, broadcast, modules)
+
+    var lows = 0  # Dummy
+    var highs = 0  # Dummy
+    var num_presses = 1
+    while True:
+        if count_pulses(broadcast, modules, lows, highs):
+            return num_presses
+        num_presses += 1
+
+
 fn main() raises:
-    print(solve(example1))
-    print(solve(example2))
-    print(solve(text))
+    print(solve1(example1))
+    print(solve1(example2))
+    print(solve1(text))
+    print(solve2(text))
 
 
 alias example1 = r"""broadcaster -> a, b, c
