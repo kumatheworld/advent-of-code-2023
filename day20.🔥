@@ -1,6 +1,6 @@
 from collections.optional import Optional
-
 from collections.dict import Dict, KeyElement
+from math import lcm
 
 alias Pulse2 = Tuple[Int, Bool]  # source, high
 alias Pulse3 = Tuple[Int, Bool, Int]  # source, high, target
@@ -117,15 +117,12 @@ fn parse(
 
 
 fn count_pulses(
-    broadcast: DynamicVector[Pulse3],
-    inout modules: DynamicVector[Module],
-    inout lows: Int,
-    inout highs: Int,
-) -> Bool:
+    broadcast: DynamicVector[Pulse3], inout modules: DynamicVector[Module]
+) -> StaticIntTuple[2]:
     var q1 = broadcast
     var q2 = DynamicVector[Pulse3]()
-    lows += 1
-    var low_final_delivered = False
+    var lows = 1
+    var highs = 0
     while len(q1):
         for i in range(len(q1)):
             let high = q1[i].get[1, Bool]()
@@ -136,7 +133,6 @@ fn count_pulses(
 
             let target = q1[i].get[2, Int]()
             if target == -1:  # Final
-                low_final_delivered = low_final_delivered or not high
                 continue
 
             let source = q1[i].get[0, Int]()
@@ -148,7 +144,7 @@ fn count_pulses(
         q1 = q2
         q2.clear()
 
-    return low_final_delivered
+    return StaticIntTuple[2](lows, highs)
 
 
 fn solve1(s: String, reps: Int = 1000) raises -> Int:
@@ -158,31 +154,49 @@ fn solve1(s: String, reps: Int = 1000) raises -> Int:
 
     var lows = 0
     var highs = 0
-    for _ in range(reps):  # Could be more efficient but meh
-        _ = count_pulses(broadcast, modules, lows, highs)
+    for _ in range(reps):
+        let lh = count_pulses(broadcast, modules)
+        lows += lh[0]
+        highs += lh[1]
 
     return lows * highs
 
 
-fn solve2(s: String) raises -> Int:
-    var broadcast = DynamicVector[Pulse3]()
-    var modules = DynamicVector[Module]()
-    parse(s, broadcast, modules)
+fn print_dot(s: String) raises -> NoneType:
+    print("digraph {")
 
-    var lows = 0  # Dummy
-    var highs = 0  # Dummy
-    var num_presses = 1
-    while True:
-        if count_pulses(broadcast, modules, lows, highs):
-            return num_presses
-        num_presses += 1
+    let lines = s.split("\n")
+    for i in range(len(lines) - 1):
+        print_no_newline("\t")
+        let st = lines[i].split(" -> ")
+        var source = st[0]
+        let targets = st[1].split(", ")
+        if source != "broadcaster":
+            let shape: String
+            if source[0] == "%":
+                shape = "box"
+            else:
+                shape = "diamond"
+            source = source[1:]
+            print_no_newline(source + " [shape=" + shape + "]; ")
+        for j in range(len(targets)):
+            print_no_newline(source + " -> " + targets[j] + "; ")
+        print()
+
+    print("}")
+
+
+# I got the intuition from graph visualization
+fn solve2() -> Int:
+    return lcm(0b111011010001, lcm(0b111110100111, lcm(0b111110100001, 0b111101011001)))
 
 
 fn main() raises:
     print(solve1(example1))
     print(solve1(example2))
     print(solve1(text))
-    print(solve2(text))
+    print_dot(text)
+    print(solve2())
 
 
 alias example1 = r"""broadcaster -> a, b, c
