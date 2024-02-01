@@ -67,10 +67,9 @@ fn solve(s: String, num_steps: Int = 64) -> Int:
     var q2 = q1
     q1.append(g.id_S)
 
-    var total = 0
+    var total = 1
     # 2 steps at a time
-    for _ in range(num_steps // 2 + 1):
-        total += len(q1)
+    for _ in range(num_steps // 2):
         for k in range(len(q1)):
             let i = q1[k].get[0, Int]()
             let j = q1[k].get[1, Int]()
@@ -90,6 +89,7 @@ fn solve(s: String, num_steps: Int = 64) -> Int:
                         q2.append(ij_)
         q1 = q2
         q2.clear()
+        total += len(q1)
 
     return total
 
