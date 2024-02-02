@@ -1,37 +1,3 @@
-struct Garden:
-    var width: Int
-    var height: Int
-    var id_S: Tuple[Int, Int]
-    var plot: DynamicVector[Bool]
-
-    fn __init__(inout self, s: String) -> NoneType:
-        var width: Int  # Could conceivably be let
-        for i in range(len(s)):
-            if s[i] == "\n":
-                width = i + 1
-                break
-        else:
-            width = -1  # Should never happen
-
-        self.width = width - 1
-        self.height = len(s) // width
-
-        for i in range(len(s)):
-            if s[i] == "S":
-                self.id_S = (i // width, i % width)
-                break
-        else:
-            self.id_S = (-1, -1)  # Should never happen
-
-        var plot = DynamicVector[Bool](len(s) - self.height)
-        for i in range(len(s)):
-            plot.append(s[i] != "#")
-        self.plot = plot ^
-
-    fn __getitem__(self, idx: Tuple[Int, Int]) -> Bool:
-        return self.plot[(self.width + 1) * idx.get[0, Int]() + idx.get[1, Int]()]
-
-
 struct Fresh:
     var width: Int
     var height: Int
@@ -52,51 +18,183 @@ struct Fresh:
         return value
 
 
-# Let's take advantage of the fact that the Elf will never reach the border
-fn solve(s: String, num_steps: Int = 64) -> Int:
-    alias di = StaticIntTuple[4](0, 1, 0, -1)
-    alias dj = StaticIntTuple[4](1, 0, -1, 0)
-    alias ddi = StaticIntTuple[4](1, 1, -1, -1)
-    alias ddj = StaticIntTuple[4](1, -1, -1, 1)
+struct Garden:
+    var width: Int
+    var height: Int
+    var start: Tuple[Int, Int]
+    var plot: DynamicVector[Bool]
 
-    let g = Garden(s)
-    var fresh = Fresh(g.width, g.height)
-    _ = fresh[g.id_S]
+    fn __init__(inout self, s: String) -> NoneType:
+        var width: Int  # Could conceivably be let
+        for i in range(len(s)):
+            if s[i] == "\n":
+                width = i + 1
+                break
+        else:
+            width = -1  # Should never happen
 
-    var q1 = DynamicVector[Tuple[Int, Int]]()
-    var q2 = q1
-    q1.append(g.id_S)
+        self.width = width - 1
+        self.height = len(s) // width
 
-    var total = 1
-    # 2 steps at a time
-    for _ in range(num_steps // 2):
-        for k in range(len(q1)):
-            let i = q1[k].get[0, Int]()
-            let j = q1[k].get[1, Int]()
-            for d in range(4):
-                # Axis-aligned
-                let ij = (i + 2 * di[d], j + 2 * dj[d])
-                let gijd = g[(i + di[d], j + dj[d])]
-                if g[ij] and gijd:
-                    if fresh[ij]:
-                        q2.append(ij)
+        for i in range(len(s)):
+            if s[i] == "S":
+                self.start = (i // width, i % width)
+                break
+        else:
+            self.start = (-1, -1)  # Should never happen
 
-                # Diagonal
-                let ij_ = (i + ddi[d], j + ddj[d])
-                let gijd_ = g[(i + di[(d + 1) % 4], j + dj[(d + 1) % 4])]
-                if g[ij_] and (gijd or gijd_):
-                    if fresh[ij_]:
-                        q2.append(ij_)
-        q1 = q2
-        q2.clear()
-        total += len(q1)
+        var plot = DynamicVector[Bool](len(s) - self.height)
+        for i in range(len(s)):
+            if (i + 1) % width:
+                plot.append(s[i] != "#")
+        self.plot = plot ^
+
+    fn __getitem__(self, idx: Tuple[Int, Int]) -> Bool:
+        let i = idx.get[0, Int]()
+        let j = idx.get[1, Int]()
+        if 0 <= i < self.height and 0 <= j < self.width:
+            return self.plot[self.width * i + j]
+        return False
+
+    # Will only work when start is even
+    # start can be 1 layer outside the garden
+    fn count(self, start: Tuple[Int, Int], num_steps: Int) -> Int:
+        alias di = StaticIntTuple[4](0, 1, 0, -1)
+        alias dj = StaticIntTuple[4](1, 0, -1, 0)
+        alias ddi = StaticIntTuple[4](1, 1, -1, -1)
+        alias ddj = StaticIntTuple[4](1, -1, -1, 1)
+
+        var fresh = Fresh(self.width, self.height)
+
+        var q1 = DynamicVector[Tuple[Int, Int]]()
+        var q2 = q1
+        q1.append(start)
+
+        var total = 0
+        if self[start]:
+            _ = fresh[start]
+            total += 1
+
+        # 2 steps at a time
+        for _ in range(num_steps // 2):
+            for k in range(len(q1)):
+                let i = q1[k].get[0, Int]()
+                let j = q1[k].get[1, Int]()
+                for d in range(4):
+                    # Axis-aligned
+                    let ij = (i + 2 * di[d], j + 2 * dj[d])
+                    let gijd = self[(i + di[d], j + dj[d])]
+                    if self[ij] and gijd:
+                        if fresh[ij]:
+                            q2.append(ij)
+
+                    # Diagonal
+                    let ij_ = (i + ddi[d], j + ddj[d])
+                    let gijd_ = self[(i + di[(d + 1) % 4], j + dj[(d + 1) % 4])]
+                    if self[ij_] and (gijd or gijd_):
+                        if fresh[ij_]:
+                            q2.append(ij_)
+            q1 = q2
+            q2.clear()
+            total += len(q1)
+
+        return total
+
+
+fn solve1(s: String, num_steps: Int = 64) -> Int:
+    let garden = Garden(s)
+    return garden.count(garden.start, num_steps)
+
+
+# Very specific to the input
+# w = h = 131
+# num_steps = 26501365
+# num_steps % 131 = 65 = w // 2 + 1 = h // 2 + 1
+# w % 4 = 3
+# q := num_steps // 131 = 202300
+#
+# The explored garden will look like a diamond as we have 田-like plots
+# The length is 2 * q + 1
+#
+# 00000..000000000..00000
+# 00000..000ece000..00000
+# 00000..00edbde00..00000
+# 00000..0edbabde0..00000
+# 00000..edbababde..00000
+# .......................
+# .......................
+# 0000e..ababababa..e0000
+# 000ed..babababab..de000
+# 00edb..ababababa..bde00
+# 0edba..babababab..abde0
+# 0cbab..ababababa..babc0
+# 0edba..babababab..abde0
+# 00edb..ababababa..bde00
+# 000ed..babababab..de000
+# 0000e..ababababa..e0000
+# .......................
+# .......................
+# 00000..edbababde..00000
+# 00000..0edbabde0..00000
+# 00000..00edbde00..00000
+# 00000..000ece000..00000
+# 00000..000000000..00000
+#
+# Each of c, d, and e has 4 patterns
+#
+# num_a = 1 + 4 * (2 + 4 + ... + q - 2) = (q - 1) ^ 2
+# num_b = 4 * (1 + 3 + ... + q - 1) - 4 = q ^ 2 - 4
+# num_c = 1
+# num_d = q - 1
+# num_e = q
+fn solve2(s: String) -> Int:
+    alias num_steps = 26501365
+
+    let garden = Garden(s)
+    let w = garden.width
+    let w1 = w - 1
+    let w2 = w // 2
+    let w3 = 2 * w - 1 - w2
+    let w4 = w3 - w - 1
+    let q = num_steps // w
+
+    # Full
+    let a = garden.count((w2, w2 + 1), w1)  # turns out sufficient to explore all
+    let b = garden.count((w2, w2), w1)  # turns out sufficient to explore all
+
+    # ~3/4
+    let c0 = garden.count((w2, 0), w1)
+    let c1 = garden.count((0, w2), w1)
+    let c2 = garden.count((w2, w1), w1)
+    let c3 = garden.count((w1, w2), w1)
+
+    # ~7/8
+    let d0 = garden.count((-1, 0), w3)
+    let d1 = garden.count((0, w), w3)
+    let d2 = garden.count((w, w1), w3)
+    let d3 = garden.count((w1, -1), w3)
+
+    # ~1/8
+    let e0 = garden.count((0, 0), w4)
+    let e1 = garden.count((0, w1), w4)
+    let e2 = garden.count((w1, w1), w4)
+    let e3 = garden.count((w1, 0), w4)
+
+    let q1 = q - 1
+    let na = q1 * q1 * a
+    let nb = q * q * b
+    let nc = c0 + c1 + c2 + c3
+    let nd = q1 * (d0 + d1 + d2 + d3)
+    let ne = q * (e0 + e1 + e2 + e3)
+    let total = na + nb + nc + nd + ne
 
     return total
 
 
 fn main():
-    print(solve(example, 6))
-    print(solve(text))
+    print(solve1(example, 6))
+    print(solve1(text))
+    print(solve2(text))
 
 
 alias example = """...........
