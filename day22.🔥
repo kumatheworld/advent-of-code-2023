@@ -15,6 +15,7 @@ struct Box(CollectionElement):
         self.xyzxyz = StaticIntTuple[6](c[0], c[1], c[2] - dz, c[3], c[4], c[5] - dz)
 
     fn intersects(self, other: Box) -> Bool:
+        # Not implemented yet
         return True
 
 
@@ -60,16 +61,25 @@ fn solve(s: String) raises -> Int:
                     continue
                 break
 
-            # Move bz[j] from bz
             # You could remove this condition
             if dz == 0:
                 continue
+
+            # Move bz[j] from bz
+            # I wish there were remove() or __delitem__ in DynamicVector
+            var bz_new = DynamicVector[Box](len(bz) - 1)
+            for k in range(len(bz)):
+                if k != j:
+                    bz_new.append(bz[k])
+            boxes2[z] = bz_new
+
+            boxes2[z - dz].append(bz[j])
 
     for z in range(height + 1):
         print(z, len(boxes2[z]))
 
     # Construct a digraph
-    # A box is disintegratable iff every block on top of it has another support
+    # A box can be disintegrated iff every block on top of it has another support
 
     return 0
 
