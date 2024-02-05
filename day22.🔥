@@ -14,9 +14,11 @@ struct Box(CollectionElement):
         let c = self.xyzxyz
         self.xyzxyz = StaticIntTuple[6](c[0], c[1], c[2] - dz, c[3], c[4], c[5] - dz)
 
+    # True iff the projections to the xy-plane intersect
     fn intersects(self, other: Box) -> Bool:
-        # Not implemented yet
-        return True
+        let bx = self[0] <= other[3] and self[3] >= other[0]
+        let by = self[1] <= other[4] and self[4] >= other[1]
+        return bx and by
 
 
 fn solve(s: String) raises -> Int:
