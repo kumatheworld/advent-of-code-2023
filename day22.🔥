@@ -9,11 +9,6 @@ struct Box(CollectionElement):
     fn __getitem__(self, idx: Int) -> Int:
         return self.xyzxyz[idx]
 
-    fn fall(inout self, dz: Int) -> NoneType:
-        # Is there any point of implementing this? You still have to change boxes2
-        let c = self.xyzxyz
-        self.xyzxyz = StaticIntTuple[6](c[0], c[1], c[2] - dz, c[3], c[4], c[5] - dz)
-
     # True iff the projections to the xy-plane intersect
     fn intersects(self, other: Box) -> Bool:
         let bx = self[0] <= other[3] and self[3] >= other[0]
