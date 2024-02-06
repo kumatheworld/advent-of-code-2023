@@ -72,6 +72,12 @@ fn solve(s: String) raises -> Int:
 
             boxes2[z - dz].append(bz[j])
 
+    # Update height
+    for z in range(height, 0, -1):
+        if len(boxes2[z]):
+            height = z
+            break
+
     for z in range(height + 1):
         print(z, len(boxes2[z]))
 
