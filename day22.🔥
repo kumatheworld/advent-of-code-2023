@@ -9,6 +9,11 @@ struct Box(CollectionElement):
     fn __getitem__(self, idx: Int) -> Int:
         return self.xyzxyz[idx]
 
+    fn fall(inout self, dz: Int) -> NoneType:
+        self.xyzxyz = StaticIntTuple[6](
+            self[0], self[1], self[2] - dz, self[3], self[4], self[5] - dz
+        )
+
     # True iff the projections to the xy-plane intersect
     fn intersects(self, other: Box) -> Bool:
         let bx = self[0] <= other[3] and self[3] >= other[0]
