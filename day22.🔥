@@ -21,7 +21,11 @@ struct Box(CollectionElement):
         return bx and by
 
 
-fn solve(s: String) raises -> Int:
+fn construct_digraph(
+    s: String,
+    inout above: DynamicVector[DynamicVector[Int]],
+    inout below: DynamicVector[DynamicVector[Int]],
+) raises -> NoneType:
     let lines = s.split("\n")
     var boxes1 = DynamicVector[Box](len(lines) - 1)
     var height = 0
@@ -99,10 +103,10 @@ fn solve(s: String) raises -> Int:
             ids[z].append(idx)
             idx += 1
 
-    var above = DynamicVector[DynamicVector[Int]](len(boxes1))
+    above = DynamicVector[DynamicVector[Int]](len(boxes1))
     for _ in range(len(boxes1)):
         above.append(DynamicVector[Int]())
-    var below = above
+    below = above
 
     for z in range(2, height + 1):
         let bz = boxes2[z]
@@ -116,9 +120,15 @@ fn solve(s: String) raises -> Int:
                     above[idb].append(ida)
                     below[ida].append(idb)
 
+
+fn solve1(s: String) raises -> Int:
+    var above = DynamicVector[DynamicVector[Int]]()
+    var below = above
+    construct_digraph(s, above, below)
+
     # A box can be disintegrated iff every block on top of it has another support
     var total = 0
-    for i in range(len(boxes1)):
+    for i in range(len(above)):
         let ai = above[i]
         for j in range(len(ai)):
             if len(below[ai[j]]) == 1:
@@ -130,8 +140,8 @@ fn solve(s: String) raises -> Int:
 
 
 fn main() raises:
-    print(solve(example))
-    print(solve(text))
+    print(solve1(example))
+    print(solve1(text))
 
 
 alias example = """1,0,1~1,2,1
