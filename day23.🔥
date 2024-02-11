@@ -42,18 +42,21 @@ struct M4p(CollectionElement):
             return self.m4p[self.width * i + j]
         return ord("#")
 
+    fn s3t(inout self, tile: Int) -> NoneType:
+        self.m4p[self.width * self.ij[0] + self.ij[1]] = tile
+
     fn step(inout self, d: Int) -> NoneType:
         let i = self.ij[0] + di[d]
         let j = self.ij[1] + dj[d]
-        self.m4p[self.width * i + j] = ord("#")
         self.ij = StaticIntTuple[2](i, j)
+        self.s3t(ord("#"))
         self.steps += 1
 
     fn end(self) -> Bool:
         return self.ij == StaticIntTuple[2](self.height - 1, self.width - 2)
 
 
-fn solve(s: String) -> Int:
+fn solve1(s: String) -> Int:
     var m4p = M4p(s)
     var stack = DynamicVector[M4p]()
     var steps = 0
@@ -86,8 +89,8 @@ fn solve(s: String) -> Int:
 
 
 fn main():
-    print(solve(example))
-    print(solve(text))
+    print(solve1(example))
+    print(solve1(text))
 
 
 alias example = """#.#####################
