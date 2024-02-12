@@ -88,9 +88,114 @@ fn solve1(s: String) -> Int:
     return steps
 
 
+fn ind3x(t: StaticIntTuple[2], ts: DynamicVector[Tuple[Int, Int]]) -> Int:
+    for k in range(len(ts)):
+        if ts[k].get[0, Int]() == t[0] and ts[k].get[1, Int]() == t[1]:
+            return k
+    return -1
+
+
+@value
+struct Trace(CollectionElement):
+    var node: Int
+    var steps: Int
+    var visited: DynamicVector[Bool]
+
+    fn __init__(inout self, len_nodes: Int) -> NoneType:
+        self.node = 0
+        self.steps = 0
+        var v = DynamicVector[Bool](len_nodes)
+        v.append(True)
+        for _ in range(len_nodes - 1):
+            v.append(False)
+        self.visited = v
+
+    fn step(inout self, node: Int, steps: Int) -> NoneType:
+        self.node = node
+        self.steps += steps
+        self.visited[node] = True
+
+
+fn solve2(s: String) -> Int:
+    var m4p = M4p(s)
+
+    # Identify the intersections
+    var nodes = DynamicVector[Tuple[Int, Int]]()
+    nodes.append((0, 1))
+    for i in range(m4p.height):
+        for j in range(m4p.width):
+            if m4p[StaticIntTuple[2](i, j)] == ord("#"):
+                continue
+
+            var ds = 0
+            for d in range(4):
+                if m4p[StaticIntTuple[2](i + di[d], j + dj[d])] != ord("#"):
+                    ds += 1
+                    if ds > 2:
+                        nodes.append((i, j))
+                        m4p.ij = (i, j)
+                        m4p.s3t(ord("x"))
+                        break
+    nodes.append((m4p.height - 1, m4p.width - 2))
+
+    # Construct a weighted graph
+    # Each element is a tuple of (dest, cost)
+    var graph = DynamicVector[DynamicVector[Tuple[Int, Int]]](len(nodes))
+    for _ in range(len(nodes)):
+        graph.append(DynamicVector[Tuple[Int, Int]]())
+
+    for _ in range(4):  # 4 loops are enough as there are only 4 directions
+        for source in range(len(nodes)):
+            let node = nodes[source]
+            m4p.ij = node
+            m4p.steps = 0
+
+            while m4p.steps >= 0:
+                for d in range(4):
+                    let ijd = StaticIntTuple[2](m4p.ij[0] + di[d], m4p.ij[1] + dj[d])
+                    if m4p[ijd] != ord("#"):
+                        if m4p[ijd] == ord("x"):
+                            let target = ind3x(ijd, nodes)
+                            graph[source].append((target, m4p.steps + 1))
+                            graph[target].append((source, m4p.steps + 1))
+                            m4p.steps = -1  # Do this to get out of the while loop
+                        else:
+                            m4p.step(d)
+                            if m4p.end():
+                                let target = len(nodes) - 1
+                                graph[source].append((target, m4p.steps))
+                                graph[target].append((source, m4p.steps))
+                                m4p.steps = -1  # Ditto
+                        break
+                else:
+                    break
+
+    # Traverse the graph
+    var steps_max = 0
+    var trace = Trace(len(nodes))
+    var traces = DynamicVector[Trace]()
+    traces.append(trace)
+    while len(traces):
+        trace = traces.pop_back()
+        if trace.node == len(nodes) - 1:
+            steps_max = max(steps_max, trace.steps)
+
+        let nodes = graph[trace.node]
+        for i in range(len(nodes)):
+            let node = nodes[i].get[0, Int]()
+            if not trace.visited[node]:
+                var trace_copy = trace
+                trace_copy.step(node, nodes[i].get[1, Int]())
+                traces.append(trace_copy)
+
+    return steps_max
+
+
 fn main():
     print(solve1(example))
     print(solve1(text))
+    print(solve2(example))
+    print(solve2(text))  # A bit slow but runs
 
 
 alias example = """#.#####################
