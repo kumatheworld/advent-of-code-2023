@@ -25,10 +25,10 @@ struct Landscape:
 
         for i in range(len(landscape)):
             if landscape[i] == "S":
-                self.id_S = StaticIntTuple[2](i // self.width, i % self.width)
+                self.id_S = (i // self.width, i % self.width)
                 break
         else:
-            self.id_S = StaticIntTuple[2](-1, -1)  # Should never happen
+            self.id_S = (-1, -1)  # Should never happen
 
     fn __getitem__(self, idx: StaticIntTuple[2]) -> String:
         return self.landscape[self.width * idx[0] + idx[1]]
@@ -38,10 +38,10 @@ fn forward(fr0m: StaticIntTuple[2], symbol: String) -> StaticIntTuple[2]:
     if symbol == "|" or symbol == "-":
         return fr0m
     if symbol == "L" or symbol == "7":
-        return StaticIntTuple[2](fr0m[1], fr0m[0])
+        return (fr0m[1], fr0m[0])
     if symbol == "J" or symbol == "F":
-        return StaticIntTuple[2](-fr0m[1], -fr0m[0])
-    return StaticIntTuple[2](0, 0)  # Should never happen
+        return (-fr0m[1], -fr0m[0])
+    return (0, 0)  # Should never happen
 
 
 fn compute_circuit(ls: Landscape) -> DynamicVector[Tuple[Int, Int]]:
@@ -52,17 +52,17 @@ fn compute_circuit(ls: Landscape) -> DynamicVector[Tuple[Int, Int]]:
     var dj = 0
     var i = ls.id_S[0] + di
     var j = ls.id_S[1] + dj
-    var symbol = ls[StaticIntTuple[2](i, j)]
+    var symbol = ls[(i, j)]
 
     var circuit = DynamicVector[Tuple[Int, Int]]()
     circuit.append((ls.id_S[0], ls.id_S[1]))
     for _ in range(len(ls.landscape)):
         circuit.append((i, j))
-        let d = forward(StaticIntTuple[2](di, dj), symbol)
+        let d = forward((di, dj), symbol)
         di, dj = d[0], d[1]
         i += di
         j += dj
-        symbol = ls[StaticIntTuple[2](i, j)]
+        symbol = ls[(i, j)]
         if symbol == "S":
             break
 

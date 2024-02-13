@@ -144,7 +144,7 @@ fn count_pulses(
         q1 = q2
         q2.clear()
 
-    return StaticIntTuple[2](lows, highs)
+    return (lows, highs)
 
 
 fn solve1(s: String, reps: Int = 1000) raises -> Int:

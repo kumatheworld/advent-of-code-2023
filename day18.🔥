@@ -18,7 +18,7 @@ fn process_line1(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
         direction = -1
 
     let length = atol(line[1])
-    return StaticIntTuple[2](direction, length)
+    return (direction, length)
 
 
 fn process_line2(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
@@ -33,7 +33,7 @@ fn process_line2(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
         length *= 16
         length += digitoid
 
-    return StaticIntTuple[2](direction, length)
+    return (direction, length)
 
 
 fn indexify(inout a: DynamicVector[Int]) -> DynamicVector[Int]:
