@@ -13,13 +13,11 @@ struct M4p(CollectionElement):
     var m4p: DynamicVector[Int]
 
     fn __init__(inout self, s: String) -> NoneType:
-        var width: Int
+        var width = -1
         for i in range(len(s)):
             if s[i] == "\n":
                 width = i
                 break
-        else:
-            width = -1  # Should never happen
 
         self.width = width
         self.height = len(s) // (width + 1)

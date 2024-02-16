@@ -25,13 +25,11 @@ struct Garden:
     var plot: DynamicVector[Bool]
 
     fn __init__(inout self, s: String) -> NoneType:
-        var width: Int  # Could conceivably be let
+        var width = -1
         for i in range(len(s)):
             if s[i] == "\n":
                 width = i + 1
                 break
-        else:
-            width = -1  # Should never happen
 
         self.width = width - 1
         self.height = len(s) // width
