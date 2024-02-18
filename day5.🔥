@@ -117,7 +117,7 @@ fn solve2(s: String) raises -> Int:
                 let query_mapped = map_segment(queries[i], m4p)
                 for j in range(len(query_mapped)):
                     queries_mapped.append(query_mapped[j])
-            queries = queries_mapped
+            queries = queries_mapped ^
             m4p.clear()
 
     var query_min = queries[0].get[0, Int]()

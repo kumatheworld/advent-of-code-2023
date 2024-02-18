@@ -64,9 +64,9 @@ fn solve_line(conditions: String, damaged: DynamicVector[Int]) -> Int:
                     table1[j] += table0[math.max(0, start)]
 
         # table0, table1 = table1, table0 doesn't work
-        let tmp = table0
-        table0 = table1
-        table1 = tmp
+        let tmp = table0 ^
+        table0 = table1 ^
+        table1 = tmp ^
 
     return table0[len(conditions)]
 
