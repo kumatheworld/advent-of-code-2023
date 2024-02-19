@@ -34,12 +34,11 @@ struct Garden:
         self.width = width - 1
         self.height = len(s) // width
 
+        self.start = (-1, -1)
         for i in range(len(s)):
             if s[i] == "S":
                 self.start = (i // width, i % width)
                 break
-        else:
-            self.start = (-1, -1)  # Should never happen
 
         var plot = DynamicVector[Bool](len(s) - self.height)
         for i in range(len(s)):

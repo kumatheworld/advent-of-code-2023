@@ -5,7 +5,7 @@ from algorithm.sort import sort
 
 
 fn process_line1(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
-    let direction: Int
+    var direction = -1
     if line[0] == "R":
         direction = 0
     elif line[0] == "D":
@@ -14,8 +14,6 @@ fn process_line1(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
         direction = 2
     elif line[0] == "U":
         direction = 3
-    else:  # Should never happen
-        direction = -1
 
     let length = atol(line[1])
     return (direction, length)
