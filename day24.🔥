@@ -1,3 +1,6 @@
+from python import Python
+
+
 fn atol_padded(s: String) raises -> Int:
     let ss = s.split(" ")
     return atol(ss[len(ss) - 1])
@@ -41,7 +44,7 @@ struct Hailstone(CollectionElement):
         )
 
 
-fn solve(
+fn solve1(
     s: String, low: Int = 200000000000000, high: Int = 400000000000000
 ) raises -> Int:
     let lines = s.split("\n")
@@ -58,9 +61,42 @@ fn solve(
     return total
 
 
+fn solve2(s: String) raises -> Int:
+    let lines = s.split("\n")
+    let np = Python.import_module("numpy")
+    var hs = np.empty((6, 0))
+
+    for i in range(5):
+        let h = Hailstone(lines[i])
+        let tail = np.expand_dims(np.array((h.x, h.y, h.z, h.vx, h.vy, h.vz)), 1)
+        # hs = np.append(hs, tail, 1) doesn't work
+        let hs_new = np.append(hs, tail, 1)
+        hs = hs_new ^
+
+    # Solve a linear equation to find out the line that intersects every hailstone path.
+    # Assume that the line is represented by p + q * r, where
+    # p = (px, py, pz) is a 3-dim vector that represents the initial position,
+    # q = (qx, qy, qz) is another 3-dim vector that represents the velocity,
+    # and r is a scalar that represents time.
+    # When another line is represented by a + b * t likewise,
+    # the 2 lines intersect iff det(p - a, q, b) = 0.
+    # This is a bit hard to solve, so we further assume WLOG that pz = 0 and qz = 1,
+    # which is possible unless the z-velocity is 0.
+    # So the degree of freedom is 4 and thus we only need 4 lines to solve for p and q,
+    # but the equation det(p - a, q, b) = 0 isn't linear at this rate.
+    # To make it linear, we can think of the term d = px * qy - py * qx as another
+    # variable so that we will virtually have 5 DoF.
+    # Fortunately, we have at least 5 lines to solve for p, q and d.
+    # If no 3 lines of them are co-planar, we'll get the line.
+
+    return 0
+
+
 fn main() raises:
-    print(solve(example, low=7, high=27))
-    print(solve(text))
+    print(solve1(example, low=7, high=27))
+    print(solve1(text))
+    print(solve2(example))
+    print(solve2(text))
 
 
 alias example = """19, 13, 30 @ -2,  1, -2
