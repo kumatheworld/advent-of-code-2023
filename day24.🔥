@@ -61,25 +61,25 @@ fn solve1(
     return total
 
 
-fn solve2(s: String) raises -> Int:
+fn solve2(s: String) raises -> NoneType:
     let lines = s.split("\n")
     let np = Python.import_module("numpy")
-    var hs = np.empty((6, 0))
+    var hs = np.empty((0, 6))
 
-    for i in range(5):
+    for i in range(len(lines) - 1):
         let h = Hailstone(lines[i])
-        let tail = np.expand_dims(np.array((h.x, h.y, h.z, h.vx, h.vy, h.vz)), 1)
-        # hs = np.append(hs, tail, 1) doesn't work
-        let hs_new = np.append(hs, tail, 1)
+        let tail = np.array((h.x, h.y, h.z, h.vx, h.vy, h.vz))[np.newaxis]
+        # hs = np.append(hs, tail, 0) doesn't work
+        let hs_new = np.append(hs, tail, 0)
         hs = hs_new ^
 
-    # Solve a linear equation to find out the line that intersects every hailstone path.
+    # Solve a linear equation to find out the line that collides every hailstone path.
     # Assume that the line is represented by p + q * r, where
     # p = (px, py, pz) is a 3-dim vector that represents the initial position,
     # q = (qx, qy, qz) is another 3-dim vector that represents the velocity,
     # and r is a scalar that represents time.
     # When another line is represented by a + b * t likewise,
-    # the 2 lines intersect iff det(p - a, q, b) = 0.
+    # the 2 lines collide iff det(p - a, q, b) = 0.
     # This is a bit hard to solve, so we further assume WLOG that pz = 0 and qz = 1,
     # which is possible unless the z-velocity is 0.
     # So the degree of freedom is 4 and thus we only need 4 lines to solve for p and q,
@@ -89,14 +89,84 @@ fn solve2(s: String) raises -> Int:
     # Fortunately, we have at least 5 lines to solve for p, q and d.
     # If no 3 lines of them are co-planar, we'll get the line.
 
-    return 0
+    let hs5t = np.append(
+        np.append(np.append(np.append(hs[0], hs[1]), hs[2]), hs[3]), hs[4]
+    ).reshape(5, 6).T
+
+    # The following doesn't work
+    # let A = np.stack(
+    #     (
+    #         hs5t[4],
+    #         -hs5t[3],
+    #         hs5t[2] * hs5t[4] - hs5t[1] * hs5t[5],
+    #         hs5t[0] * hs5t[5] - hs5t[2] * hs5t[3],
+    #         hs5t[5],
+    #     )
+    # )
+    # let A = np.append(
+    #     hs5t[4],
+    #     np.append(
+    #         -hs5t[3],
+    #         np.append(
+    #             hs5t[2] * hs5t[4] - hs5t[1] * hs5t[5],
+    #             np.append(hs5t[0] * hs5t[5] - hs5t[2] * hs5t[3], hs5t[5]),
+    #         ),
+    #     ),
+    # ).reshape(5, 5).T
+    let A = np.append(
+        np.append(
+            np.append(
+                np.append(
+                    hs5t[4],
+                    -hs5t[3],
+                ),
+                hs5t[2] * hs5t[4] - hs5t[1] * hs5t[5],
+            ),
+            hs5t[0] * hs5t[5] - hs5t[2] * hs5t[3],
+        ),
+        hs5t[5],
+    ).reshape(5, 5).T
+
+    let b = hs5t[0] * hs5t[4] - hs5t[1] * hs5t[3]
+    let x = np.linalg.solve(A, b)
+
+    # Turns out no hailstone path is parallel to the line in xy!
+    # Under the assumption of pz = 0 and qz = 1, r corresponds to the z-coordinate of
+    # the collision point.
+    let r = ((x[0] - hs.T[0]) * hs.T[4] - (x[1] - hs.T[1]) * hs.T[3]) / (
+        x[3] * hs.T[3] - x[2] * hs.T[4]
+    )
+
+    # Collision points
+    let c = np.append(np.append(x[0] + x[2] * r, x[1] + x[3] * r), r).reshape(
+        3, r.shape[0]
+    ).T
+
+    # Collision time
+    let t = (r - hs.T[2]) / hs.T[5]
+
+    # Do some math to get the initial position
+    # Ideally, you'd just need 2 points, but you might not get the right answer
+    # due to some numerical instability.
+    # Take the mean to be a little more accurate.
+    var sums = np.empty(0)
+    for i in range(len(lines) - 1):
+        for j in range(i):
+            let p0 = (c[j] * t[i] - c[i] * t[j]) / (t[i] - t[j])
+            let sums_new = np.append(sums, p0.sum())
+            sums = sums_new ^
+
+    # Just find the nearest integer. It's a pain to return it as an Int.
+    # 557743507346379.7 is returned by the following.
+    # 557743507346380 was too high, so let's decrement it by 1.
+    print(sums.mean())
 
 
 fn main() raises:
     print(solve1(example, low=7, high=27))
     print(solve1(text))
-    print(solve2(example))
-    print(solve2(text))
+    solve2(example)
+    solve2(text)
 
 
 alias example = """19, 13, 30 @ -2,  1, -2
