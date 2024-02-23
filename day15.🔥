@@ -29,7 +29,6 @@ fn solve2(s: String) raises -> Int:
     let steps = s[:-1].split(",")
     for i in range(len(steps)):
         let step = steps[i]
-        print(i, step)
         let last = len(step) - 1
         if step[last] == "-":
             let label = step[:last]
