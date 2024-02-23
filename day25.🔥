@@ -1,5 +1,6 @@
 from collections.dict import Dict
 from day20 import StringKey
+from random.random import random_si64, seed
 
 
 fn register_key(
@@ -11,6 +12,19 @@ fn register_key(
         d[k] = len(d)
         g.append(DynamicVector[Int]())
     return d[k]
+
+
+fn permute_random(ids: DynamicVector[Int]) -> DynamicVector[Int]:
+    """See https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle."""
+    seed()
+    var permuted = ids
+    let n = len(ids) - 1
+    for i in range(n):
+        let j = i + random_si64(0, n - i).to_int()
+        let tmp = permuted[i]
+        permuted[i] = permuted[j]
+        permuted[j] = tmp
+    return permuted
 
 
 fn solve(s: String) raises -> Int:
