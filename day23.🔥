@@ -102,10 +102,9 @@ struct Trace(CollectionElement):
     fn __init__(inout self, len_nodes: Int) -> NoneType:
         self.node = 0
         self.steps = 0
-        var v = DynamicVector[Bool](len_nodes)
+        var v = DynamicVector[Bool](1)
         v.append(True)
-        for _ in range(len_nodes - 1):
-            v.append(False)
+        v.resize(len_nodes, False)
         self.visited = v
 
     fn step(inout self, node: Int, steps: Int) -> NoneType:
@@ -138,9 +137,8 @@ fn solve2(s: String) -> Int:
 
     # Construct a weighted graph
     # Each element is a tuple of (dest, cost)
-    var graph = DynamicVector[DynamicVector[Tuple[Int, Int]]](len(nodes))
-    for _ in range(len(nodes)):
-        graph.append(DynamicVector[Tuple[Int, Int]]())
+    var graph = DynamicVector[DynamicVector[Tuple[Int, Int]]]()
+    graph.resize(len(nodes), DynamicVector[Tuple[Int, Int]]())
 
     for _ in range(4):  # 4 loops are enough as there are only 4 directions
         for source in range(len(nodes)):

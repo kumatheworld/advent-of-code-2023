@@ -59,9 +59,8 @@ fn solve2(s: String) -> Int:
     var total = 0
     let v = num_winnings_all(s)
 
-    var cards = DynamicVector[Int](len(v))
-    for i in range(0, len(v)):
-        cards.append(1)
+    var cards = DynamicVector[Int]()
+    cards.resize(len(v), 1)
 
     for i in range(len(v)):
         let ci = cards[i]

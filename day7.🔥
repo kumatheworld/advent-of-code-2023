@@ -35,9 +35,8 @@ struct Hand(CollectionElement):
         return 0  # Should never happen
 
     fn rank(self) -> Int:
-        var counter = DynamicVector[Int](15)
-        for i in range(15):
-            counter.append(0)
+        var counter = DynamicVector[Int]()
+        counter.resize(15, 0)
 
         for i in range(5):
             counter[self.hand[i]] += 1
@@ -129,9 +128,8 @@ struct Hand2(CollectionElement):
         return num
 
     fn rank(self) -> Int:
-        var counter = DynamicVector[Int](15)
-        for i in range(15):
-            counter.append(0)
+        var counter = DynamicVector[Int]()
+        counter.resize(15, 0)
 
         for i in range(5):
             counter[self.hand[i]] += 1

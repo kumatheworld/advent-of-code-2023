@@ -24,9 +24,8 @@ fn parse_directions(lines: DynamicVector[String]) -> DynamicVector[Int]:
 
 
 fn parse_network(lines: DynamicVector[String]) -> Network:
-    var network = Network(26**3)
-    for i in range(26**3):
-        network.append((-1, -1))
+    var network = Network(0)
+    network.resize(26**3, (-1, -1))
 
     for i in range(2, len(lines) - 1):
         let line = lines[i]

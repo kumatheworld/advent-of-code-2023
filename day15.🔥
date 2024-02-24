@@ -22,9 +22,8 @@ fn solve2(s: String) raises -> Int:
     alias num_boxes = 256
 
     # Tuple[String, Int] doesn't really work as .get[0, String]() fails
-    var boxes = DynamicVector[DynamicVector[String]](num_boxes)
-    for _ in range(num_boxes):
-        boxes.append(DynamicVector[String]())
+    var boxes = DynamicVector[DynamicVector[String]]()
+    boxes.resize(num_boxes, DynamicVector[String]())
 
     let steps = s[:-1].split(",")
     for i in range(len(steps)):

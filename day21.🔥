@@ -6,10 +6,8 @@ struct Fresh:
     fn __init__(inout self, width: Int, height: Int) -> NoneType:
         self.width = width
         self.height = height
-        var fresh = DynamicVector[Bool](width * height)
-        for _ in range(width * height):
-            fresh.append(True)
-        self.fresh = fresh ^
+        self.fresh = DynamicVector[Bool]()
+        self.fresh.resize(width * height, True)
 
     fn __getitem__(inout self, idx: Tuple[Int, Int]) -> Bool:
         let serial = self.width * idx.get[0, Int]() + idx.get[1, Int]()
