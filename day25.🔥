@@ -9,11 +9,11 @@ fn register_key(k: StringKey, inout d: Dict[StringKey, Int]) raises -> Int:
     return d[k]
 
 
-fn permute_random(ids: DynamicVector[Int]) -> DynamicVector[Int]:
+fn permute_random[T: CollectionElement](xs: DynamicVector[T]) -> DynamicVector[T]:
     """See https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle."""
     seed()
-    var permuted = ids
-    let n = len(ids) - 1
+    var permuted = xs
+    let n = len(xs) - 1
     for i in range(n):
         let j = i + random_si64(0, n - i).to_int()
         let tmp = permuted[i]
