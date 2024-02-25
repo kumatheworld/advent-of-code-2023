@@ -3,11 +3,7 @@ from day20 import StringKey
 from random.random import random_si64, seed
 
 
-fn register_key(
-    k: StringKey,
-    inout d: Dict[StringKey, Int],
-    inout g: DynamicVector[DynamicVector[Int]],
-) raises -> Int:
+fn register_key(k: StringKey, inout d: Dict[StringKey, Int]) raises -> Int:
     if not d.__contains__(k):
         d[k] = len(d)
         g.append(DynamicVector[Int]())
@@ -30,17 +26,14 @@ fn permute_random(ids: DynamicVector[Int]) -> DynamicVector[Int]:
 fn solve(s: String) raises -> Int:
     # Construct a graph
     var labels = Dict[StringKey, Int]()
-    var graph = DynamicVector[DynamicVector[Int]](len(labels))
+    var graph = DynamicVector[Tuple[Int, Int]]()
     let lines = s.split("\n")
     for i in range(len(lines) - 1):
         let keys = lines[i].split(" ")
-        let u = register_key(keys[0][: len(keys[0]) - 1], labels, graph)
+        let u = register_key(keys[0][: len(keys[0]) - 1], labels)
         for j in range(1, len(keys)):
-            let v = register_key(keys[j], labels, graph)
-            graph[u].append(v)
-            graph[v].append(u)
-
-    return 0
+            let v = register_key(keys[j], labels)
+            graph.append((u, v))
 
 
 fn main() raises:
