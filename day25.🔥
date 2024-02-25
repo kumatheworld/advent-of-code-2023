@@ -6,7 +6,6 @@ from random.random import random_si64, seed
 fn register_key(k: StringKey, inout d: Dict[StringKey, Int]) raises -> Int:
     if not d.__contains__(k):
         d[k] = len(d)
-        g.append(DynamicVector[Int]())
     return d[k]
 
 
