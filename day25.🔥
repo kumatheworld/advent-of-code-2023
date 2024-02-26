@@ -3,6 +3,39 @@ from day20 import StringKey
 from random.random import random_si64, seed
 
 
+@value
+struct UnionFind:
+    var parent: DynamicVector[Int]
+
+    fn __init__(inout self, n: Int) -> NoneType:
+        self.parent = DynamicVector[Int]()
+        self.parent.resize(n, -1)
+
+    fn find(inout self, i: Int) -> Int:
+        if self.parent[i] < 0:
+            return i
+        self.parent[i] = self.find(self.parent[i])
+        return self.parent[i]
+
+    fn union(inout self, i: Int, j: Int) -> Bool:
+        var pi = self.find(i)
+        var pj = self.find(j)
+
+        if pi == pj:
+            return False
+
+        if self.parent[pi] > self.parent[pj]:
+            pi, pj = pj, pi
+
+        self.parent[pi] += self.parent[pj]
+        self.parent[pj] = pi
+
+        return True
+
+    fn size(inout self, i: Int) -> Int:
+        return -self.parent[self.find(i)]
+
+
 fn register_key(k: StringKey, inout d: Dict[StringKey, Int]) raises -> Int:
     if not d.__contains__(k):
         d[k] = len(d)
