@@ -67,6 +67,34 @@ fn solve(s: String) raises -> Int:
             let v = register_key(keys[j], labels)
             graph.append((u, v))
 
+    # Run Karger's algorithm. See https://en.wikipedia.org/wiki/Karger%27s_algorithm.
+    let n = len(labels)
+    let m = len(graph)
+    let uf0 = UnionFind(m)
+    while True:
+        var uf = uf0
+        let edges = permute_random(graph)
+        var i = 0
+        var num_edges = 0
+        while num_edges < n - 2:
+            let u = edges[i].get[0, Int]()
+            let v = edges[i].get[1, Int]()
+            if uf.union(u, v):
+                num_edges += 1
+            i += 1
+
+        var cut = 0
+        for j in range(i, m):
+            let u = edges[j].get[0, Int]()
+            let v = edges[j].get[1, Int]()
+            if uf.find(u) != uf.find(v):
+                cut += 1
+                if cut > 3:
+                    break
+        else:
+            let k = uf.size(0)
+            return k * (n - k)
+
 
 fn main() raises:
     print(solve(example))
