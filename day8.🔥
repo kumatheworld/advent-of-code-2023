@@ -12,7 +12,7 @@ fn hash_cap3(s: String) -> Int:
     return total
 
 
-fn parse_directions(lines: DynamicVector[String]) -> DynamicVector[Int]:
+fn parse_directions(borrowed lines: DynamicVector[String]) -> DynamicVector[Int]:
     let LRs = lines[0]
     var directions = DynamicVector[Int](len(LRs))
     for i in range(len(LRs)):
@@ -23,7 +23,7 @@ fn parse_directions(lines: DynamicVector[String]) -> DynamicVector[Int]:
     return directions
 
 
-fn parse_network(lines: DynamicVector[String]) -> Network:
+fn parse_network(borrowed lines: DynamicVector[String]) -> Network:
     var network = Network(0)
     network.resize(26**3, (-1, -1))
 
@@ -52,7 +52,9 @@ fn solve1(s: String) raises -> Int:
     return -1  # Should never happen
 
 
-fn nodes_endswith(suffix: String, lines: DynamicVector[String]) -> DynamicVector[Int]:
+fn nodes_endswith(
+    suffix: String, borrowed lines: DynamicVector[String]
+) -> DynamicVector[Int]:
     var nodes = DynamicVector[Int]()
     for i in range(2, len(lines) - 1):
         let line = lines[i]

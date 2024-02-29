@@ -20,7 +20,7 @@ fn parse_line(inout line: String) raises -> DynamicVector[Int]:
     return damaged
 
 
-fn solve_line(conditions: String, damaged: DynamicVector[Int]) -> Int:
+fn solve_line(conditions: String, borrowed damaged: DynamicVector[Int]) -> Int:
     var table0 = DynamicVector[Int](len(conditions) + 1)
     var table1 = DynamicVector[Int](len(conditions) + 1)
 

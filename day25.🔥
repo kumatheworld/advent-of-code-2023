@@ -42,7 +42,9 @@ fn register_key(k: StringKey, inout d: Dict[StringKey, Int]) raises -> Int:
     return d[k]
 
 
-fn permute_random[T: CollectionElement](xs: DynamicVector[T]) -> DynamicVector[T]:
+fn permute_random[
+    T: CollectionElement
+](borrowed xs: DynamicVector[T]) -> DynamicVector[T]:
     """See https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle."""
     seed()
     var permuted = xs

@@ -4,7 +4,7 @@ from day10 import is_inside
 from algorithm.sort import sort
 
 
-fn process_line1(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
+fn process_line1(borrowed line: DynamicVector[String]) raises -> StaticIntTuple[2]:
     var direction = -1
     if line[0] == "R":
         direction = 0
@@ -19,7 +19,7 @@ fn process_line1(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
     return (direction, length)
 
 
-fn process_line2(line: DynamicVector[String]) raises -> StaticIntTuple[2]:
+fn process_line2(borrowed line: DynamicVector[String]) raises -> StaticIntTuple[2]:
     let direction = atol(line[2][7])
     var length = 0
     for i in range(2, 7):
@@ -85,7 +85,8 @@ fn step(a: Int, b: Int) -> Int:
 
 
 fn solve(
-    s: String, process_line: fn (DynamicVector[String]) raises -> StaticIntTuple[2]
+    s: String,
+    process_line: fn (borrowed DynamicVector[String]) raises -> StaticIntTuple[2],
 ) raises -> Int:
     alias di = StaticIntTuple[4](0, 1, 0, -1)
     alias dj = StaticIntTuple[4](1, 0, -1, 0)

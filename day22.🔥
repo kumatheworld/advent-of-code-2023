@@ -136,7 +136,7 @@ fn solve1(s: String) raises -> Int:
     return total
 
 
-fn in_(x: Int, xs: DynamicVector[Int]) -> Bool:
+fn in_(x: Int, borrowed xs: DynamicVector[Int]) -> Bool:
     for i in range(len(xs)):
         if xs[i] == x:
             return True

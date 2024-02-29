@@ -17,7 +17,7 @@ fn h4sh(s: String) -> Int:
     return -1
 
 
-fn ind3x(label: String, labels: DynamicVector[String]) -> Int:
+fn ind3x(label: String, borrowed labels: DynamicVector[String]) -> Int:
     let ll = len(labels)
 
     if label == "R":
@@ -33,7 +33,7 @@ fn ind3x(label: String, labels: DynamicVector[String]) -> Int:
 
 
 fn compile_workflows(
-    wf_str: DynamicVector[String], inout workflows: DynamicVector[Workflow]
+    borrowed wf_str: DynamicVector[String], inout workflows: DynamicVector[Workflow]
 ) raises -> Int:
     # Number labels
     var labels = DynamicVector[String]()
@@ -157,7 +157,9 @@ struct Intervals(CollectionElement):
 
 
 fn compute_total(
-    idx: Int, inout xmas: DynamicVector[Intervals], workflows: DynamicVector[Workflow]
+    idx: Int,
+    inout xmas: DynamicVector[Intervals],
+    borrowed workflows: DynamicVector[Workflow],
 ) -> Int:
     if idx == len(workflows):  # R
         return 0

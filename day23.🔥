@@ -86,7 +86,7 @@ fn solve1(s: String) -> Int:
     return steps
 
 
-fn ind3x(t: StaticIntTuple[2], ts: DynamicVector[Tuple[Int, Int]]) -> Int:
+fn ind3x(t: StaticIntTuple[2], borrowed ts: DynamicVector[Tuple[Int, Int]]) -> Int:
     for k in range(len(ts)):
         if ts[k].get[0, Int]() == t[0] and ts[k].get[1, Int]() == t[1]:
             return k

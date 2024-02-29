@@ -30,7 +30,9 @@ struct Module(CollectionElement):
     var prev: DynamicVector[Pulse2]  # Only applicable to a conjunction
     var n3xt: DynamicVector[Int]
 
-    fn __init__(inout self, is_conj: Bool, n3xt: DynamicVector[Int]) -> NoneType:
+    fn __init__(
+        inout self, is_conj: Bool, borrowed n3xt: DynamicVector[Int]
+    ) -> NoneType:
         self.on = is_conj
         self.prev = DynamicVector[Pulse2]()
         self.n3xt = n3xt
@@ -117,7 +119,7 @@ fn parse(
 
 
 fn count_pulses(
-    broadcast: DynamicVector[Pulse3], inout modules: DynamicVector[Module]
+    borrowed broadcast: DynamicVector[Pulse3], inout modules: DynamicVector[Module]
 ) -> StaticIntTuple[2]:
     var q1 = broadcast
     var q2 = DynamicVector[Pulse3]()
