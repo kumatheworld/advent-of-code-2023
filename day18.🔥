@@ -143,7 +143,7 @@ fn solve(
 fn main() raises:
     print(solve(example, process_line1))
     print(solve(text, process_line1))  # A little bit slow but runs
-    print(solve(example, process_line2))  # A little bit slow but runs
+    print(solve(example, process_line2))
     print(solve(text, process_line2))  # Slow but runs
 
 
