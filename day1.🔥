@@ -26,7 +26,7 @@ fn strrev(s: String) -> String:
 
 
 fn solve2_line_first_digit(
-    s: String, numbers: InlinedFixedVector[StringLiteral, 9]
+    s: String, borrowed numbers: InlinedFixedVector[StringLiteral, 9]
 ) -> Int:
     alias ord0 = ord("0")
     var first_index = len(s)
@@ -53,8 +53,8 @@ fn solve2_line_first_digit(
 
 fn solve2_line(
     s: String,
-    numbers: InlinedFixedVector[StringLiteral, 9],
-    srebmun: InlinedFixedVector[StringLiteral, 9],
+    borrowed numbers: InlinedFixedVector[StringLiteral, 9],
+    borrowed srebmun: InlinedFixedVector[StringLiteral, 9],
 ) -> Int:
     let first_digit = solve2_line_first_digit(s, numbers)
     let last_digit = solve2_line_first_digit(strrev(s), srebmun)
